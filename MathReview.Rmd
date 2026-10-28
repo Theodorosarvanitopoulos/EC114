@@ -1,0 +1,158 @@
+---
+pagetitle: "Mathematics Review for Introductory Macro"
+output:
+  html_document:
+    self_contained: true
+    toc: false
+    mathjax: default
+---
+
+<style>
+  body { background: #eee; color: #111; font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.18; }
+  .main-container { max-width: none !important; padding: 0 !important; }
+  .page { position: relative; box-sizing: border-box; width: 210mm; min-height: 297mm; margin: 18px auto; padding: 15mm 20mm 13mm; background: white; box-shadow: 0 1px 6px #bbb; }
+  .page + .page { padding-top: 6mm; }
+  .running-head { display: flex; justify-content: space-between; line-height: 1.12; margin: 0 0 8mm; }
+  .running-head span:last-child { text-align: right; }
+  .page h1 { font-size: 17pt; text-align: center; font-weight: bold; margin: 4mm 0 5mm; }
+  .page h2 { font-size: 14pt; font-weight: bold; margin: 5mm 0 1mm; }
+  .page p { margin: 0 0 2.5mm; }
+  .example { color: #0070c0; font-weight: bold; }
+  .math { color: #d00000; }
+  .page .math.display { display: block; text-align: center; margin: 2mm 0 4mm; }
+  .page ol { padding-left: 8mm; margin: 2mm 0 5mm; }
+  .page li { padding-left: 0; margin-bottom: 2mm; }
+  .page-number { position: absolute; bottom: 11mm; left: 0; right: 0; text-align: center; }
+  @media print { @page { size: A4; margin: 0; } body { background: white; } .page { margin: 0; box-shadow: none; page-break-after: always; break-after: page; } .page:last-child { page-break-after: auto; break-after: auto; } }
+</style>
+
+::: {.page}
+
+<div class="running-head"><span>Economics 114<br>Introductory Macro</span><span>Autumn 2026<br>Dr Theodoros Arvanitopoulos</span></div>
+
+# Mathematics Review for Introductory Macro
+
+## Functions
+
+A function is a mapping; the function $y=f(x)$ tells us that for each value of $x$, there is a unique value of $y$.
+
+<span class="example">Examples:</span> &emsp; $f(x)=3x^2$ &emsp; $f(x)=x^3+7x^{1/2}$
+
+## Derivatives
+
+The derivative of a function is its slope at a point; it tells us how much $y$ changes for a very small change in $x$. The ratio $\Delta y/\Delta x$ gives the slope over an interval; as the interval becomes very small, the derivative can be written as
+
+$$\lim_{\Delta x\to 0}\frac{\Delta y}{\Delta x}=\frac{dy}{dx}=f'(x)$$
+
+<u>Basic Rule:</u>  
+If $f(x)=ax^n$, then $f'(x)=anx^{n-1}$
+
+<span class="example">Example:</span> &emsp; If $f(x)=2x+5$, then $f'(x)=2$<br>
+&emsp;&emsp;&emsp;&emsp;&emsp; If $f(x)=3x^2$, then $f'(x)=6x$<br>
+&emsp;&emsp;&emsp;&emsp;&emsp; If $f(x)=x^3+7x^{1/2}$, then $f'(x)=3x^2+(7)\left(\frac{1}{2}\right)x^{-1/2}=3x^2+\frac{7}{2x^{1/2}}$
+
+<u>Product Rule:</u>  
+If $y=f(x)g(x)$, then
+
+$$\frac{dy}{dx}=\frac{d[f(x)g(x)]}{dx}=f(x)g'(x)+g(x)f'(x)$$
+
+<span class="example">Example:</span> &emsp; If $y=(2x+3)(3x^2)$, then
+
+$$\frac{dy}{dx}=(2x+3)(6x)+2(3x^2)=18x^2+18x$$
+
+<u>Quotient Rule:</u>  
+If $y=f(x)/g(x)$, then
+
+$$\frac{dy}{dx}=\frac{d[f(x)/g(x)]}{dx}=\frac{f'(x)g(x)-f(x)g'(x)}{g(x)^2}$$
+
+<span class="example">Example:</span> &emsp; If $y=5x/(x^2+1)$, then
+
+$$\frac{dy}{dx}=\frac{5(x^2+1)-5x(2x)}{(x^2+1)^2}=\frac{5(1-x^2)}{(x^2+1)^2}$$
+
+<u>Chain Rule:</u>  
+If we have a function $z=f(y)$, where $y$ is in turn a function of another variable $x$, say $y=g(x)$, then we have $z=f(g(x))$ and
+
+$$\frac{dz}{dx}=\left(\frac{dz}{dy}\right)\left(\frac{dy}{dx}\right)=f'(y)g'(x)$$
+
+<div class="page-number">1</div>
+
+:::
+
+::: {.page}
+
+<span class="example">Example:</span> &emsp; If $z=3y^2$ and $y=2x+1$, then $z=f(g(x))=3(2x+1)^2$ and
+
+$$\frac{dz}{dx}=\left(\frac{dz}{dy}\right)\left(\frac{dy}{dx}\right)=f'(y)g'(x)=(6y)(2)=12y=12(2x+1)$$
+
+## Partial Derivatives
+
+Here we consider functions where $y$ is a function of more than one independent variable. In other words,
+
+$$y=f(x_1,x_2,\ldots x_n)$$
+
+In this case, we use the symbol $\partial y/\partial x_i$ to represent the partial derivative of $y$ with respect to $x_i$. This simply means that we take the derivative of $y$ with respect to $x_i$, while holding the other independent variables constant.
+
+<span class="example">Example:</span> &emsp; If $y=f(x_1,x_2)=2x_1^2+x_1x_2+9x_2$, then
+
+$$\frac{\partial y}{\partial x_1}=4x_1+x_2\quad\text{and}\quad\frac{\partial y}{\partial x_2}=x_1+9$$
+
+*Question:* Consider the production function $Y=F(K,L)=K^{1/2}L^{1/2}$, where $K$ is capital and $L$ is labour. What are $\partial Y/\partial K$ and $\partial Y/\partial L$? What is the economic interpretation of $\partial Y/\partial K$ and $\partial Y/\partial L$?
+
+## Optimisation
+
+In economics, we often have to find the best alternative available by maximising something, such as a firm’s profits, or an individual’s utility, or minimising something, such as a firm’s costs. For an interior maximum or minimum of a differentiable function, we differentiate the function and set the derivative equal to zero.
+
+For example, if $y=3x^2-24x+6$, then by setting $f'(x)=0$, we find that $6x-24=0$, i.e. $x=4$. But is this a maximum or a minimum? Note that when $x<4$, $f'(x)<0$, and that when $x>4$, the slope of the function is positive. In other words, the function reaches a minimum at $x=4$.
+
+Alternatively, you could take the second derivative, i.e. differentiate $f(x)$ twice with respect to $x$. This is represented by $f''(x)$, which is read as “f double prime of x.”
+
+When $f'(x)=0$ and $f''(x)<0$, then the slope of the function is decreasing, i.e. the function is at a maximum (think of a hill). If $f'(x)=0$ and $f''(x)>0$, then the slope of the function is increasing, i.e. the function is at a minimum (think of a U-shaped curve).
+
+*Question:* Go back to the production function $Y=F(K,L)=K^{1/2}L^{1/2}$. Is the second partial derivative with respect to $K$ positive or negative? What about the second partial derivative with respect to $L$? What is the economic interpretation of this?
+
+## First Order Conditions
+
+In economics, we typically need to maximise (or minimise) functions that depend on more than one variable. For an interior optimum, we take partial derivatives of the objective function with respect to each choice variable, holding the others constant, and set each derivative equal to zero. These are called first-order conditions.
+
+<div class="page-number">2</div>
+
+:::
+
+::: {.page}
+
+<span class="example">Example:</span> &emsp; Consider the production function $Y=F(K,L)$. Let $W$ represent the nominal wage rate, and $R$ be the nominal rental rate of capital. The price of the output is given by $P$. We can thus define profits as $\Pi=PF(K,L)-WL-RK$. The profit maximisation problem is
+
+$$\max_{L,K}\;PF(K,L)-WL-RK$$
+
+The first order conditions are
+
+$$P\frac{\partial Y}{\partial L}=W\quad\text{and}\quad P\frac{\partial Y}{\partial K}=R$$
+
+Thus, in order to maximise profits, we need to set $\partial Y/\partial L=W/P$ and $\partial Y/\partial K=R/P$.
+
+*Question:* What is the economic interpretation of these two equations?
+
+## Practice Problems
+
+Find the **derivative** of each function:
+
+1. $f(x)=8x$
+2. $f(x)=5x+x^3$
+3. $f(x)=x^4+x+10$
+
+Find the **partial derivative** with respect to each variable (i.e. differentiate with respect to one variable at a time, treating the other one as a constant):
+
+4. $f(x_1,x_2)=x_1^2+x_2+4$
+5. $f(x_1,x_2)=5x_1x_2+2x_1$
+6. $F(K,L)=K^{1/3}L^{2/3}$
+7. $F(K,L)=AK^\alpha L^{1-\alpha}$
+
+Find the **second derivative** of each function (i.e. differentiate twice). In each case, what can you say about the shape of the function (i.e. what would the graph of the function look like) for positive values of $x$? Explain.
+
+8. $f(x)=2x$
+9. $f(x)=x^2$
+10. $f(x)=x^{1/2}$
+
+<div class="page-number">3</div>
+
+:::
