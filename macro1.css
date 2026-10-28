@@ -1,0 +1,19 @@
+body { font-family: Arial, sans-serif; color: #252525; background: #fff; }
+h1,h2,h3,h4,h5,h6 { font-family: Arial, sans-serif; font-weight: 700; color: #003b70; }
+div.slide h1 { color:#003b70; background:transparent; padding:4pt 0; font-size:160%; line-height:1.2; }
+h2 { border-bottom:4px solid #e5007d; padding-bottom:.15em; font-size:155%; }
+h3 { color:#008c95; } strong { color:#003b70; }
+table { width:92%; margin:.75em auto; border-collapse:collapse; font-size:92%; }
+th { background:#003b70; color:#fff; padding:.42em; } td { padding:.42em; border-bottom:1px solid #c7d6dc; }
+blockquote { border-left:8px solid #e84e0f; background:#f4f6f6; padding:.7em 1em; font-size:120%; }
+.slide p,.slide li { line-height:1.22; } .slide img { max-height:60vh; }
+.small { font-size:78%; } .teal { color:#008c95; font-weight:700; } .orange { color:#e84e0f; font-weight:700; }
+.equation-box { margin:.55em auto; padding:.45em .8em; width:82%; background:#f4f6f6; border-left:7px solid #008c95; font-size:112%; }
+.plot-stack { position:relative; width:min(700px,65vw); aspect-ratio:850 / 455; margin:.1em auto 0; }
+.plot-stack>img,.plot-overlays,.plot-overlays>li { position:absolute; inset:0; width:100%; height:100%; margin:0; padding:0; }
+.plot-stack>img,.plot-overlays>li>img { width:100%; height:100%; max-height:none; background:#fff; }
+.plot-overlays>li { list-style:none; }
+.cycle-notes { max-width:1120px; margin:.15em auto 0; font-size:92%; line-height:1.26; }
+.cycle-notes li { margin:.28em 0; }
+.slide p > img { display:block; margin:.1em auto; max-width:85%; object-fit:contain; }
+.why-macroeconomics { margin-top:1.35em; }

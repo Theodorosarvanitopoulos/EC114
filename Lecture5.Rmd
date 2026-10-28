@@ -1,0 +1,721 @@
+---
+title: "Lecture 5: Consumption, investment and equilibrium output"
+subtitle: "Macro I"
+author: "Dr Theodoros Arvanitopoulos"
+date: ""
+output:
+  slidy_presentation:
+    self_contained: true
+    slide_level: 2
+    footer: "Macro I - Lecture 5"
+css: ../../macro1.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
+blue <- '#003b70'; teal <- '#007c83'; orange <- '#b84713'; grey <- '#687581'
+build <- function(id, captions, draw) {
+  cat(sprintf('<div class="graph-build" id="%s" tabindex="0" aria-label="Step-by-step graph">', id))
+  for (s in seq_along(captions)) {
+    f <- tempfile(fileext='.png')
+    png(f, width=1500, height=650, res=155, bg='white')
+    par(mar=c(3.6,4.5,1.1,2.6), mgp=c(2.5,.65,0), family='sans', cex=1.16)
+    draw(s); dev.off()
+    cat(sprintf('<figure class="build-state"%s><img alt="%s" src="%s"><figcaption>%s</figcaption></figure>',
+                if(s>1) ' hidden' else '', captions[s], knitr::image_uri(f), captions[s]))
+    unlink(f)
+  }
+  cat('<div class="build-controls"><button type="button" data-dir="-1">Previous step</button> <span class="build-count"></span> <button type="button" data-dir="1">Next step</button></div></div>')
+}
+axes <- function(xlim=c(0,220), ylim=c(0,220), xlab='Output and income, Y', ylab='Planned expenditure, AE') {
+  plot(NA, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab, axes=FALSE, xaxs='i', yaxs='i', bty='n')
+  axis(1,col=grey,col.axis=grey); axis(2,las=1,col=grey,col.axis=grey)
+}
+guide <- function(x,y,col=grey) {
+  segments(x,par('usr')[3],x,y,lty=3,col=col)
+  segments(par('usr')[1],y,x,y,lty=3,col=col)
+  points(x,y,pch=21,bg=col,col='white',cex=1.35)
+}
+cross <- function(xlim=c(0,220), ylim=c(0,220), intercept=70, slope=.5, shift=0, diagonal=TRUE) {
+  axes(xlim,ylim)
+  if(diagonal) abline(0,1,col=grey,lwd=2,lty=2)
+  abline(intercept,slope,col=blue,lwd=3)
+  if(shift!=0) abline(intercept+shift,slope,col=orange,lwd=3)
+}
+```
+
+## Learning objectives
+
+<style>
+.graph-build { max-width: 1130px; margin: .15em auto; }
+.graph-build figure { margin: 0; }
+.graph-build img { width: 100%; max-height: 44vh; object-fit: contain; }
+.graph-build figcaption { text-align: center; font-size: 79%; min-height: 2.3em; }
+.build-controls { text-align: center; font-size: 62%; margin: .1em; }
+.build-controls button { font: inherit; padding: .25em .55em; }
+.build-count { padding: 0 .8em; }
+.source { font-size: 60%; color: #555; margin-top: .6em; }
+.compact table { font-size: 81%; }
+.lecture-section { position: absolute; top: 1.55em; right: 2.25em; font-size: 49%; color: #687581; letter-spacing: .08em; text-transform: uppercase; }
+[hidden] { display: none !important; }
+@media print { .build-controls { display:none; } }
+</style>
+
+### The short-run goods market
+
+- Explain why Keynes focused on spending when output and employment were low.
+- Use the consumption function and calculate the marginal propensities to consume and save.
+- Distinguish planned from actual investment, including inventory changes.
+- Find equilibrium output algebraically and in the Keynesian cross.
+- Trace the multiplier and show why saving equals planned investment at equilibrium.
+
+### 📚 Reading
+
+Case, Fair and Oster, *Principles of Macroeconomics*, Chapter 8.
+
+## Lecture outline
+
+1. **Introduction:** Keynes's question and the two-sector model.
+2. **Consumption and saving:** how households divide income.
+3. **Investment:** plans, inventories and the interest rate.
+4. **Equilibrium output:** planned expenditure, inventories and \(S=I^P\).
+5. **The multiplier:** how an investment change alters equilibrium output.
+
+We begin with spending decisions, then bring them together in the goods market.
+
+## Keynes's question
+
+### The problem
+
+- The Great Depression brought persistent unemployment and sharply lower output. 
+- Many people were willing to work, but firms were not producing or hiring enough. 
+- Lower wages alone did not guarantee more jobs: firms also needed customers for the goods additional workers would make.
+
+### Keynes's intuition
+
+- Firms respond to weak sales by cutting production. 
+- Workers then receive less income and households spend less, weakening sales further. 
+- An economy can therefore remain below its productive capacity in the short run.
+
+**The question for this lecture:** how do consumption and investment spending determine output, and what happens when planned spending changes?
+
+## Our starting model
+
+We begin with households and firms in a **closed economy without government**. Households buy consumption goods. Firms buy new capital goods and add to inventories.
+
+\[
+\boxed{Y=C+I.}
+\]
+
+Here \(Y\) is the value of output and the income it generates, \(C\) is consumption, and \(I\) is **actual investment**, including changes in inventories. This is an accounting identity for this simplified economy.
+
+Firms also make **plans**. Their planned investment \(I^P\) may differ from actual investment when sales differ from expectations. We therefore study planned spending \(AE=C+I^P\) and ask when it equals output.
+
+## What determines consumption?
+
+Consumption depends on more than current income. A broader relationship is
+
+\[
+C=C(Y_D,r,W,Y_D^e).
+\]
+
+- \(C\): household consumption of goods and services.
+- \(Y_D\): **disposable income**, income available after taxes.
+- \(r\): the **real interest rate**, relevant to borrowing and saving.
+- \(W\): **wealth**, the value of assets less liabilities.
+- \(Y_D^e\): **expected future disposable income**.
+
+Higher current income normally raises consumption. Greater wealth or stronger expected income can also support spending. For now, with no taxes, \(Y_D=Y\); we hold \(r\), \(W\) and \(Y_D^e\) fixed.
+
+## The consumption function
+
+Keynes's intuition was that consumption rises with income, but by **less** than the full increase in income. We represent that idea with a straight line:
+
+\[
+\boxed{C=a+bY=\bar C+bY},\qquad 0<b<1.
+\]
+
+- \(C\): **real consumption**; \(Y\): **real current income**.
+- \(a=\bar C\): **autonomous consumption**, the intercept when \(Y=0\). The bar means we hold this part fixed as income changes.
+- \(b\): the **marginal propensity to consume (MPC)**, or slope. It measures how much consumption rises when income increases by one unit.
+
+For example, \(C=50+0.5Y\) has autonomous consumption of 50. A household could finance consumption at zero current income using savings or borrowing. A rise in wealth or expected income changes the intercept, shifting the whole function.
+
+## Marginal propensity to consume
+
+\[
+MPC=b=\frac{\Delta C}{\Delta Y}.
+\]
+
+If \(C=50+0.5Y\), another £1 of income raises consumption by 50p. The other 50p is saved.
+
+::: incremental
+
+| Income \(Y\) | Consumption \(C\) | Change in consumption |
+|---:|---:|---:|
+| 100 | 100 | — |
+| 120 | 110 | £10 for £20 more income |
+
+Thus \(MPC=10/20=0.5\). The MPC is the **slope**, not the fraction of total income consumed.
+
+:::
+
+## Consumption function
+
+In \(C=50+0.5Y\), the intercept is \(\bar C=50\) and the slope is \(MPC=0.5\). A change in \(Y\) moves us **along** the line; a change in autonomous consumption shifts it.
+
+```{r consumption-plot, results='asis'}
+build('consumption', c('At zero income, consumption equals autonomous consumption, C-bar = 50',
+ 'MPC = 0.5. Below Y = 100 saving is negative; above it saving is positive',
+ 'Higher expected income shifts the function upward at every current income'), function(s) {
+ axes(c(0,200),c(0,200),'Income, Y','Consumption, C')
+ abline(0,1,col=grey,lty=2,lwd=2); text(120,182,'45-degree line',col=grey)
+ points(0,50,pch=21,bg=blue,col='white',cex=1.25);text(10,35,expression(bar(C)),col=blue,adj=0)
+ if(s>=2){abline(50,.5,col=blue,lwd=3);guide(100,100,blue);text(143,94,'C = 50 + 0.5Y',col=blue)}
+ if(s==2){segments(40,40,40,70,col=orange,lwd=2);text(35,88,'S < 0',col=orange)
+           segments(170,135,170,170,col=teal,lwd=2);text(182,153,'S > 0',col=teal)}
+ if(s>=3){abline(75,.5,col=orange,lwd=3);arrows(120,110,120,135,length=.1,col=orange,lwd=2);text(48,175,'Higher autonomous C',col=orange)}
+})
+```
+
+## Spending versus saving
+
+At each level of income, households either consume or save:
+
+\[
+Y=C+S \quad\Rightarrow\quad S=Y-C.
+\]
+
+Since \(\bar C=a\) is consumption **independent of current income**, it reduces saving by the same amount. Substituting \(C=\bar C+bY\) gives
+
+\[
+S=-\bar C+(1-b)Y.
+\]
+
+At very low current income, saving can be negative. 
+
+This is **dissaving**: households consume more than their current income. 
+
+In our example, \(Y=40\) gives \(C=70\) and \(S=-30\); at \(Y=160\), \(C=130\) and \(S=30\).
+
+## Marginal propensity to save
+
+The **marginal propensity to save (MPS)** is the part of an **additional** unit of income that households save. Because every extra pound is either consumed or saved,
+
+\[
+\Delta Y=\Delta C+\Delta S.
+\]
+
+Dividing through by \(\Delta Y\) gives
+
+\[
+MPS=\frac{\Delta S}{\Delta Y}=1-b=1-MPC.
+\]
+
+In our example, income rises from 100 to 120. Consumption rises from 100 to 110, so saving rises from 0 to 10. Thus \(MPC=10/20=0.5\) and \(MPS=10/20=0.5\).
+
+The **average propensity to consume** asks a different question: what share of *total* income is consumed? At \(Y=120\), \(APC=C/Y=110/120\approx0.917\), while the MPC remains 0.5.
+
+## Saving function
+
+For \(C=50+0.5Y\), the saving function is \(S=-50+0.5Y\). 
+
+Its **intercept** is \(-50\) and its **slope** is \(MPS=0.5\).
+
+
+```{r saving-plot, results='asis'}
+build('saving',c('At zero current income, saving is negative',
+ 'Saving rises with slope MPS = 0.5',
+ 'Saving crosses zero where income equals consumption'),function(s){
+ axes(c(0,220),c(-60,70),'Income, Y','Saving, S')
+ abline(h=0,col=grey,lwd=2)
+ points(0,-50,pch=21,bg=blue,col='white',cex=1.3)
+ text(12,-48,'-50',col=blue)
+ if(s>=2){abline(-50,.5,col=blue,lwd=3);text(142,61,'S = -50 + 0.5Y',col=blue)}
+ if(s>=3){guide(100,0,orange);text(105,-13,'S = 0 at Y = 100',col=orange,adj=0)}
+})
+```
+
+Saving becomes zero at \(Y=100\), where consumption exactly equals income. 
+
+Below that income, households dissave; above it, saving is positive.
+
+## Consumption and saving together
+
+The 45-degree line in a consumption graph shows \(C=Y\). 
+
+With \(C=50+0.5Y\), compare consumption with that line to read saving directly from \(S=Y-C\):
+
+| Income \(Y\) | Consumption \(C\) | Saving \(S\) | Relative to the 45-degree line |
+|---:|---:|---:|---|
+| 40 | 70 | \(-30\) | Above the 45-degree line |
+| 100 | 100 | 0 | On the line |
+| 160 | 130 | 30 | Below the line |
+
+- At \(Y=40\), households dissave; at \(Y=160\), they save part of their income. 
+- A rise in wealth or expected future income can shift consumption upward. 
+- At a **given** current income, saving then falls by the same amount.
+
+## Investment in this model
+
+In national accounts, investment is spending on **newly produced capital goods**, residential construction and additions to inventories.
+
+- A firm buying a **new machine** adds to productive capital.
+- Building a **new house** counts as residential investment.
+- Goods produced but not sold this period add to **inventories**.
+
+\[
+I=I(r, Y, technology)
+\]
+
+## Investment in this model
+
+In national accounts, investment is spending on **newly produced capital goods**, residential construction and additions to inventories.
+
+- A firm buying a **new machine** adds to productive capital.
+- Building a **new house** counts as residential investment.
+- Goods produced but not sold this period add to **inventories**.
+
+\[
+I=I(r, Y, technology)
+\]
+
+Buying a share in an existing firm is a financial transaction; it does not itself produce a new machine or house. 
+
+Planned investment responds to expected sales, technology and the cost of finance. 
+
+We first hold those influences fixed, writing \(I^P=\bar I\), where the bar indicates a fixed level of planned investment.
+
+## Autonomous planned investment
+
+
+```{r autonomous-investment, results='asis'}
+build('investment-flat',c('Planned investment is held at 20 for every current income',
+ 'A better business outlook raises planned investment to 40'),function(s){
+ axes(c(0,220),c(0,75),'Income, Y','Planned investment')
+ abline(h=20,col=blue,lwd=3);text(184,25,'I = 20',col=blue)
+ if(s>=2){abline(h=40,col=orange,lwd=3);arrows(110,23,110,38,length=.12,col=orange,lwd=2);text(184,45,'I = 40',col=orange)}
+})
+```
+
+The flat line is an assumption: **changes in current income do not directly change planned investment here**. 
+
+Firms can still revise their plans, moving the whole line.
+
+Autonomous investment $I=\bar{I}$
+
+## Investment and the interest rate
+
+A higher real interest rate makes borrowing dearer and raises the return an investment project must earn. Fewer projects may be worthwhile.
+
+\[
+I^P=I_0-\gamma r,\qquad \gamma>0.
+\]
+
+- \(I_0\) is planned investment at a zero real interest rate
+- \(-\gamma=\Delta I^P/\Delta r\) is the change in planned investment for a **one-unit** change in the interest-rate measure. 
+- This slope is not an elasticity. We use \(\gamma\) so that \(b\) continues to mean the MPC.
+
+The straight-line equation gives one simple approximation. The next graph allows sensitivity to vary along the schedule. When solving for output later, we hold \(r\) fixed, so \(I^P=\bar I\).
+
+## Investment schedule
+
+When the real interest rate rises, fewer projects cover their financing cost. The movement from 3% to 6% in the graph reduces planned investment from 100 to 60. A better profit outlook shifts the schedule to the right: firms plan more investment **at the same interest rate**.
+
+```{r interest-investment, results='asis'}
+build('investment-rate',c('At a real interest rate of 3%, planned investment is 100',
+ 'When the rate rises to 6%, planned investment falls to 60',
+ 'A better profit outlook shifts investment right at a given rate'),function(s){
+ axes(c(0,120),c(0,11),'Planned investment, I','Real interest rate, r (%)')
+ rate<-function(x) 12.642857-.132142857*x+.000357142857*x^2
+ xx<-seq(30,120,length.out=250)
+ lines(xx,rate(xx),col=blue,lwd=3)
+ guide(100,3,blue)
+ if(s>=2){guide(60,6,orange);arrows(94,3.4,64,5.7,length=.1,col=orange,lwd=2)}
+ if(s>=3){lines(xx+14,rate(xx),col=teal,lwd=3);text(100,7.3,'Better outlook',col=teal)}
+})
+```
+
+## Planned and actual investment
+
+Firms decide how much to produce before they know exactly how much customers will buy. The resulting inventory change can therefore differ from their plan.
+
+\[
+I^A=I^P+\Delta\text{inventories}^{U},\qquad
+\Delta\text{inventories}^{U}=Y-AE.
+\]
+
+- \(I^P\): **planned investment**, including intended additions to inventories.
+- \(\Delta\text{inventories}^{U}\): the **unplanned** change in inventories when sales differ from plans.
+- \(I^A\): **actual investment**, including both planned and unplanned changes.
+
+If \(AE>Y\), firms sell more than they produced and inventories fall unexpectedly. 
+
+If \(AE<Y\), inventories rise unexpectedly. These signals help firms decide whether to raise or cut output.
+
+## Planned aggregate expenditure
+
+Planned aggregate expenditure (\(AE\)) is the amount households and firms **intend** to buy at each level of income. Substitute their behavioural equations into \(AE=C+I^P\):
+
+\[
+C=\bar C+bY,\qquad I^P=\bar I,
+\]
+\[
+\boxed{AE(Y)=\underbrace{\bar C+\bar I}_{\text{autonomous spending}}+\underbrace{bY}_{\text{induced consumption}}.}
+\]
+
+This expression gives planned demand at **any** level of output. \(\bar C+\bar I\) is spending independent of current income. The term \(bY\) rises with income; its slope is the MPC, \(b\).
+
+At equilibrium, output supplied equals planned demand:
+
+\[
+\underbrace{Y}_{\text{output supplied}}
+=\underbrace{(\bar C+\bar I)+bY}_{\text{planned demand for goods}}.
+\]
+
+This expenditure schedule is not the aggregate-demand curve relating a price level to output.
+
+## From consumption to expenditure
+
+```{r expenditure-build, results='asis'}
+build('expenditure',c('Start with consumption, C = 50 + 0.5Y',
+ 'Add planned investment of 20 at every income',
+ 'Planned expenditure is AE = 70 + 0.5Y'),function(s){
+ axes(c(0,220),c(0,210),'Output and income, Y','Planned spending')
+ abline(50,.5,col=teal,lwd=3);text(170,115,'C = 50 + 0.5Y',col=teal)
+ if(s>=2){segments(110,105,110,125,lwd=2,col=orange);arrows(110,107,110,123,length=.1,col=orange,lwd=2);text(110,141,'I = 20',col=orange)}
+ if(s>=3){abline(70,.5,col=blue,lwd=3);text(176,186,'AE = 70 + 0.5Y',col=blue)}
+})
+```
+
+## Equilibrium output
+
+Goods-market equilibrium requires firms' output to match **planned** purchases:
+
+\[
+Y=AE=C+I^P.
+\]
+
+On a Keynesian cross, the 45-degree line records \(AE=Y\). Equilibrium lies where the planned-expenditure line crosses it.
+
+If \(AE>Y\), inventories fall unexpectedly and firms have an incentive to produce more. If \(AE<Y\), inventories rise unexpectedly and firms tend to cut production.
+
+## The Keynesian cross
+
+```{r cross-equilibrium, results='asis'}
+build('cross',c('The 45-degree line shows spending equal to output',
+ 'Consumption rises with income: C = 50 + 0.5Y',
+ 'Adding planned investment shifts spending up by 20 at every income',
+ 'The intersection is equilibrium: Y = AE = 140'),function(s){
+ axes(c(0,220),c(0,220))
+ abline(0,1,col=grey,lty=2,lwd=2);text(150,207,'45-degree line',col=grey)
+ if(s>=2){abline(50,.5,col=teal,lwd=3);text(169,109,'C = 50 + 0.5Y',col=teal)}
+ if(s>=3){abline(70,.5,col=blue,lwd=3);text(90,175,'AE = C + I = 70 + 0.5Y',col=blue);arrows(70,87,70,103,length=.1,col=orange,lwd=2);text(68,125,'I = 20',col=orange)}
+ if(s>=4){guide(140,140,orange);text(149,18,'Y* = 140',col=orange,adj=0)}
+})
+```
+
+## Away from equilibrium
+
+Suppose output is \(Y=100\). Planned spending is \(70+0.5(100)=120\). 
+
+Customers want more than firms produce, so inventories fall unexpectedly by 20 and firms expand.
+
+At \(Y=180\), planned spending is \(160\). 
+
+Unsold goods add 20 to inventories; firms tend to reduce production.
+
+These inventory signals move output **towards** the intersection. 
+
+In reality the adjustment takes time; the diagram captures its direction.
+
+## Inventory adjustment
+
+```{r adjustment-plot, results='asis'}
+build('adjustment',c('At Y1 = 180, inventories rise by 20; firms cut output',
+ 'At Y2 = 100, inventories fall by 20; firms raise output',
+ 'Both adjustment directions point towards equilibrium Y* = 140'),function(s){
+ cross()
+ segments(180,0,180,180,lty=3,col=orange)
+ segments(0,180,180,180,lty=3,col=orange)
+ segments(0,160,180,160,lty=3,col=orange)
+ segments(180,160,180,180,lwd=3,col=orange)
+ points(c(180,180),c(180,160),pch=21,bg=orange,col='white',cex=1.25)
+ text(184,13,'Y1 = 180',col=orange,cex=.8,adj=0)
+ text(7,195,'Y1 = 180',adj=0,col=orange,cex=.85)
+ text(85,207,'Inventories rise: cut output',col=orange)
+ if(s>=2){
+  segments(100,0,100,120,lty=3,col=blue)
+  segments(0,100,100,100,lty=3,col=blue)
+  segments(0,120,100,120,lty=3,col=blue)
+  segments(100,100,100,120,lwd=3,col=blue)
+  points(c(100,100),c(100,120),pch=21,bg=blue,col='white',cex=1.25)
+  text(96,13,'Y2 = 100',col=blue,cex=.8,adj=1)
+  text(7,111,'Y2 = 100',adj=0,col=blue,cex=.85)
+  text(85,188,'Inventories fall: raise output',col=blue)
+ }
+ if(s>=3){guide(140,140,teal);arrows(105,38,134,38,length=.1,col=teal,lwd=2);arrows(174,38,146,38,length=.1,col=teal,lwd=2);text(149,52,'Y* = 140',col=teal,adj=0)}
+})
+```
+
+## Numerical example
+
+Recall the general relationships before substituting numbers:
+
+\[
+AE(Y)=\bar C+bY+\bar I,\qquad
+\Delta\text{inventories}^{U}=Y-AE(Y),\qquad
+I^A=I^P+\Delta\text{inventories}^{U}.
+\]
+
+Now let \(\bar C=50\), \(b=0.5\), \(\bar I=20\), and initial output \(Y_0=100\). Planned spending is
+
+\[
+AE(Y_0)=\bar C+bY_0+\bar I=50+0.5(100)+20=120.
+\]
+
+Firms sell 20 more than expected, so **unplanned inventories fall by 20**:
+
+\[
+\Delta\text{inventories}^{U}=Y_0-AE_0=100-120=-20.
+\]
+
+With \(I^P=20\), actual investment is \(I^A=20-20=0\). Firms have an incentive to raise output. What happens to consumption as income rises?
+
+## The first rounds of adjustment
+
+The initial spending gap tells firms how much more to produce. The higher output becomes household income, which changes consumption according to the MPC:
+
+\[
+\Delta Y_1=AE(Y_0)-Y_0=20,\qquad
+\Delta C_1=b\Delta Y_1=0.5(20)=10.
+\]
+
+Planned spending therefore rises again: \(AE(Y_1)=AE(Y_0)+\Delta C_1=130\).
+
+::: incremental
+
+| Round | Output \(Y\) | Planned expenditure \(AE=70+0.5Y\) | Gap \(AE-Y\) |
+|---:|---:|---:|---:|
+| Initial | 100 | 120 | 20 |
+| After first response | 120 | 130 | 10 |
+| After second response | 130 | 135 | 5 |
+| After third response | 135 | 137.5 | 2.5 |
+
+The gap shrinks because each additional round of consumption is only half the preceding increase in income.
+
+:::
+
+## Equilibrium by substitution
+
+At equilibrium, \(Y=AE(Y)\). Write the general equation first, then substitute the numbers:
+
+\[
+Y=\bar C+bY+\bar I
+\quad\Rightarrow\quad
+Y=50+0.5Y+20.
+\]
+
+::: incremental
+
+\[
+0.5Y=70\quad\Rightarrow\quad Y^*=140.
+\]
+
+Check: \(C(140)=120\), \(I^P=20\), and \(AE=120+20=140\). Planned purchases exactly match output. Unplanned inventory investment is zero.
+
+:::
+
+## Saving and investment at equilibrium
+
+Household income is either consumed or saved: \(Y=C+S\). 
+
+Goods-market equilibrium requires planned purchases to equal output: \(Y=C+I^P\).
+
+Subtract \(C\) from both equalities:
+
+\[
+\boxed{S=I^P \quad\text{at goods-market equilibrium}.}
+\]
+
+At other output levels, **actual** investment can still equal saving in the national accounts because actual investment includes unplanned inventory changes. 
+
+The condition here concerns **planned investment**.
+
+## Saving equals planned investment
+
+Using the worked example, \(S=-50+0.5Y\) and \(I^P=20\). 
+
+Their intersection is at \(Y=140\), the same output as in the Keynesian cross.
+
+```{r saving-investment, results='asis'}
+build('saving-investment',c('Saving rises with income',
+ 'Planned investment is fixed at 20',
+ 'The intersection gives S = I and Y = 140'),function(s){
+ axes(c(0,220),c(-55,80),'Output and income, Y','Saving and planned investment')
+ abline(h=0,col=grey,lwd=1)
+ abline(-50,.5,col=blue,lwd=3);text(190,66,'S',col=blue)
+ if(s>=2){abline(h=20,col=orange,lwd=3);text(195,27,'I = 20',col=orange)}
+ if(s>=3){guide(140,20,teal);text(146,40,'S = I',col=teal,adj=0)}
+})
+```
+
+## Equilibrium formula
+
+The numerical example gave \(Y^*=140\). 
+
+To solve **any** version of this simple model, begin with the equilibrium condition and collect the terms in \(Y\):
+
+\[
+Y=\bar C+bY+\bar I
+\quad\Rightarrow\quad
+(1-b)Y=\bar C+\bar I.
+\]
+
+::: incremental
+
+\[
+\boxed{Y^*=\frac{1}{1-b}\,(\bar C+\bar I).}
+\]
+
+The bracket is **autonomous planned spending**. The factor \(1/(1-b)\) tells us how much equilibrium output corresponds to one unit of that spending. 
+
+With \(\bar C=50\), \(\bar I=20\), and \(b=0.5\), it gives \(Y^*=2(70)=140\).
+
+:::
+
+## A change in planned investment
+
+Keep \(\bar C=50\) and \(b=0.5\), but let firms raise their **fixed planned investment** from \(\bar I_0=20\) to \(\bar I_1=40\). Define its change before using it:
+
+\[
+\Delta\bar I\equiv\bar I_1-\bar I_0=40-20=20.
+\]
+
+The bar means this part of investment does **not** depend on current income in our model. A rise in \(\bar I\) shifts planned expenditure up by 20 at every \(Y\):
+
+\[
+AE_0(Y)=70+0.5Y,\qquad AE_1(Y)=90+0.5Y.
+\]
+
+We will calculate the new equilibrium and then see the shift in the final diagram.
+
+## Repeated spending rounds
+
+At the old equilibrium \(Y_0^*=140\), the extra investment first raises planned spending by 20. When firms produce the additional goods, income rises, generating more consumption:
+
+\[
+\Delta Y=20+0.5(20)+0.5^2(20)+\cdots
+=20+10+5+2.5+\cdots.
+\]
+
+Each round is half the previous one because \(MPC=b=0.5\). This short calculation makes the multiplier mechanism visible without following every inventory adjustment indefinitely.
+
+::: incremental
+
+In general, \(\Delta Y=\Delta\bar I(1+b+b^2+\cdots)\). Since \(0<b<1\), the sequence converges.
+
+:::
+
+## Multiplier formula
+
+The geometric sum gives the change in equilibrium output:
+
+\[
+\boxed{\Delta Y^*=\frac{1}{1-b}\,\Delta\bar I
+=\frac{1}{MPS}\,\Delta\bar I.}
+\]
+
+::: incremental
+
+Here \(b=0.5\), so the multiplier is \(1/(1-0.5)=2\).
+
+Thus \(\Delta Y^*=2(20)=40\), and the new equilibrium is \(Y_1^*=140+40=180\).
+
+Check with the general level formula: \(Y_1^*=[1/(1-0.5)](50+40)=180\). Both methods give the same result.
+
+:::
+
+### Check your understanding
+
+If \(C=60+0.75Y\) and \(I^P=40\), find equilibrium output and the multiplier. What would an unexpected rise in inventories tell firms?
+
+## The multiplier in the Keynesian cross
+
+With \(C=50+0.5Y\), an increase in \(\bar I\) from 20 to 40 shifts planned expenditure upward by 20 at **every** income. Follow the first gap, the induced consumption, and the new equilibrium.
+
+```{r multiplier-cross, results='asis'}
+build('multiplier-cross',c('A: the original equilibrium is Y = 140 with planned investment of 20',
+ 'B: investment rises by 20, creating a spending gap at the old output',
+ 'At Y = 160, higher income adds 10 to consumption and creates another gap',
+ 'E: repeated rounds end at Y = 180; the total output increase is 40'),function(s){
+ axes(c(0,230),c(0,230),'Output and income, Y','Planned expenditure, AE')
+ abline(0,1,col=grey,lty=2,lwd=2)
+ abline(70,.5,col=blue,lwd=3)
+ guide(140,140,blue);text(128,151,'A',col=blue)
+ text(203,161,'AE0',col=blue)
+ if(s>=2){
+  abline(90,.5,col=orange,lwd=3)
+  points(140,160,pch=21,bg=orange,col='white',cex=1.3)
+  arrows(140,143,140,157,length=.1,col=orange,lwd=2)
+  text(200,218,'AE1',col=orange)
+  text(127,177,'B',col=orange)
+ }
+ if(s>=3){
+  segments(160,0,160,170,lty=3,col=teal)
+  points(160,170,pch=21,bg=teal,col='white',cex=1.3)
+  segments(160,160,160,170,col=teal,lwd=2)
+  text(150,212,'Induced +10',col=teal)
+ }
+ if(s>=4){
+  guide(180,180,orange)
+  text(185,200,'E',col=orange)
+  arrows(142,28,178,28,length=.11,col=teal,lwd=2)
+  text(160,43,'Total output +40',col=teal)
+ }
+})
+```
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ var section='Introduction';
+ var sectionStarts={
+  'What determines consumption?':'Consumption',
+  'Spending versus saving':'Saving',
+  'Investment in this model':'Investment',
+  'Planned aggregate expenditure':'Equilibrium output',
+  'A change in planned investment':'The multiplier'
+ };
+ document.querySelectorAll('div.slide').forEach(function(slide){
+  var heading=slide.querySelector('h1');
+  if(!heading)return;
+  var title=heading.textContent.trim();
+  if(sectionStarts[title])section=sectionStarts[title];
+  if(title.startsWith('Lecture 5:'))return;
+  var label=document.createElement('span');
+  label.className='lecture-section';label.textContent=section;
+  slide.appendChild(label);
+ });
+ document.querySelectorAll('.graph-build').forEach(function(b){
+  var states=Array.from(b.querySelectorAll('.build-state')), n=0;
+  function show(){states.forEach(function(s,i){s.hidden=i!==n;});
+   b.querySelector('.build-count').textContent='Step '+(n+1)+' of '+states.length;
+   b.querySelector('[data-dir="-1"]').disabled=n===0;
+   b.querySelector('[data-dir="1"]').disabled=n===states.length-1;}
+  b.querySelectorAll('button').forEach(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();n=Math.max(0,Math.min(states.length-1,n+Number(btn.dataset.dir)));show();});});
+  b.addEventListener('click',function(e){e.stopPropagation();});
+  b.advance=function(dir){if((dir>0&&n<states.length-1)||(dir<0&&n>0)){n+=dir;show();return true;}return false;};
+  show();
+ });
+ document.addEventListener('keydown',function(e){
+  if(e.target.matches('button,input,textarea,select,a'))return;
+  var dir=['ArrowRight',' ','PageDown'].includes(e.key)?1:['ArrowLeft','PageUp'].includes(e.key)?-1:0;
+  if(!dir)return;
+  var b=Array.from(document.querySelectorAll('.graph-build')).find(function(b){return b.getClientRects().length>0&&getComputedStyle(b.closest('.slide')).visibility!=='hidden';});
+  if(b&&b.advance(dir)){e.preventDefault();e.stopImmediatePropagation();}
+ },true);
+ window.addEventListener('beforeprint',function(){document.querySelectorAll('.graph-build').forEach(function(b){var a=b.querySelectorAll('.build-state');a.forEach(function(s,i){s.hidden=i!==a.length-1;});});});
+});
+</script>

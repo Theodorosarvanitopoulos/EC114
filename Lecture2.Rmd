@@ -1,0 +1,558 @@
+---
+title: "Lecture 2: Micro foundations for macroeconomics"
+subtitle: "Macro I"
+author: "Dr Theodoros Arvanitopoulos"
+date: ""
+output:
+  slidy_presentation:
+    font_adjustment: 0
+    footer: "Macro I - Lecture 2"
+    self_contained: true
+css: macro1.css
+---
+
+```{r setup, include=FALSE}
+# This chunk creates the SVG diagrams used later in the slides. It does not print in the HTML.
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+dir.create("figures", showWarnings = FALSE)
+# Change these values to change the colours throughout the diagrams.
+reading_blue <- "#003b70"
+reading_teal <- "#008c95"
+reading_pink <- "#e5007d"
+reading_orange <- "#e84e0f"
+grid_col <- "#d9e1e5"
+
+# Common axes and grid styling for all plots below; plot() supplies the axis labels.
+plot_theme <- function() {
+  axis(1, col = "#555555", col.axis = "#252525", lwd = 1.2)
+  axis(2, col = "#555555", col.axis = "#252525", lwd = 1.2, las = 1)
+  box(bty = "l", col = "#555555", lwd = 1.2)
+  grid(col = grid_col, lty = 1)
+}
+
+# PPF: stage 0 = curve; 1 = A; 2 = move to B; 3 = trade-off annotations.
+ppf_frame <- function(file, stage) {
+  svg(file, width = 9, height = 4.8, bg = "white")
+  par(mar = c(4.2, 4.5, 0.5, 1.0))
+  x <- seq(0, 10, length.out = 200)
+  y <- 10 - 0.10 * x^2  # Edit this expression to change the frontier's shape.
+  plot(x, y, type = "n", xlim = c(0, 10.5), ylim = c(0, 10.5),
+       xlab = "Capital goods", ylab = "Consumption goods", axes = FALSE)
+  plot_theme()
+  lines(x, y, lwd = 3, col = reading_blue)
+  text(7.8, 4.8, "PPF", col = reading_blue, font = 2)
+  if (stage >= 1) {
+    # Point and label coordinates are fixed: update them if the PPF changes.
+    points(3, 9.1, pch = 19, cex = 1.7, col = reading_pink)
+    text(3.25, 9.65, "A", col = reading_pink, font = 2)
+  }
+  if (stage >= 2) {
+    arrows(3.35, 8.85, 6.55, 5.25, length = .12, lwd = 2.5, col = reading_orange)
+    points(7, 5.1, pch = 19, cex = 1.7, col = reading_orange)
+    text(7.25, 5.6, "B", col = reading_orange, font = 2)
+  }
+  if (stage >= 3) {
+    segments(3, 0, 3, 9.1, lty = 2, col = "#777777")
+    segments(7, 0, 7, 5.1, lty = 2, col = "#777777")
+    text(5.15, 1.1, "more investment today", col = reading_orange, font = 2)
+    text(5.15, 9.5, "less consumption today", col = reading_pink, font = 2)
+  }
+  dev.off()
+}
+
+# Combined market: stage 0 = curves; 1 = equilibrium; 2 = price/quantity guides.
+# shock selects an extra demand or supply curve for the later shock slides.
+market_frame <- function(file, stage, shock = "none") {
+  svg(file, width = 9, height = 4.8, bg = "white")
+  par(mar = c(4.2, 4.5, 0.5, 1.0))
+  q <- seq(0, 55, length.out = 200)
+  demand <- 50 - 0.5 * q  # Inverse demand: price as a function of quantity.
+  supply <- 10 + 0.5 * q  # Inverse supply. These meet at Q = 40, P = 30.
+  plot(q, demand, type = "n", xlim = c(0, 58), ylim = c(0, 55),
+       axes = FALSE, xlab = "Quantity", ylab = "Price")
+  plot_theme()
+  lines(q, demand, lwd = 3, col = reading_blue)
+  lines(q, supply, lwd = 3, col = reading_teal)
+  text(50, 23, "D", col = reading_blue, font = 2)
+  text(50, 37, "S", col = reading_teal, font = 2)
+  # Equilibrium points, guides, and shift endpoints below use fixed coordinates.
+  # If you edit a curve equation, recalculate these coordinates too.
+  if (stage >= 1) {
+    points(40, 30, pch = 19, cex = 1.6, col = reading_pink)
+    text(42, 31.8, "E", col = reading_pink, font = 2)
+  }
+  if (stage >= 2) {
+    segments(0, 30, 40, 30, lty = 2, col = "#777777")
+    segments(40, 0, 40, 30, lty = 2, col = "#777777")
+    text(2.5, 31.8, expression(P^"*"), col = reading_pink, font = 2)
+    text(40, 2.5, expression(Q^"*"), col = reading_pink, font = 2)
+  }
+  if (shock == "demand") {
+    demand2 <- 57.5 - 0.5 * q
+    lines(q, demand2, lwd = 3, col = reading_orange)
+    text(53, 32, expression(D[1]), col = reading_orange, font = 2)
+    arrows(25, 39, 32, 42.5, length = .12, lwd = 2.3, col = reading_orange)
+    points(47.5, 33.75, pch = 19, cex = 1.6, col = reading_orange)
+    segments(0, 33.75, 47.5, 33.75, lty = 2, col = reading_orange)
+    segments(47.5, 0, 47.5, 33.75, lty = 2, col = reading_orange)
+  }
+  if (shock == "supply") {
+    supply2 <- 17.5 + 0.5 * q
+    lines(q, supply2, lwd = 3, col = reading_orange)
+    text(50, 44, expression(S[1]), col = reading_orange, font = 2)
+    arrows(32, 26, 25, 30, length = .12, lwd = 2.3, col = reading_orange)
+    points(32.5, 33.75, pch = 19, cex = 1.6, col = reading_orange)
+    segments(0, 33.75, 32.5, 33.75, lty = 2, col = reading_orange)
+    segments(32.5, 0, 32.5, 33.75, lty = 2, col = reading_orange)
+  }
+  dev.off()
+}
+
+# Generate every stage once. Later slides display these files using <img> tags.
+invisible(lapply(0:3, function(i) ppf_frame(sprintf("figures/ppf-%s.svg", i), i)))
+invisible(lapply(0:2, function(i) market_frame(sprintf("figures/equilibrium-%s.svg", i), i)))
+market_frame("figures/demand-shift.svg", 2, "demand")
+market_frame("figures/supply-shift.svg", 2, "supply")
+
+# A curve on its own: kind chooses demand/supply; stage 0 = curve,
+# 1 = movement along it, and 2 = a new shifted curve.
+single_curve_frame <- function(file, kind, stage) {
+  svg(file, width = 8.5, height = 4.3, bg = "white")
+  par(mar = c(4.1, 4.5, 0.4, 0.8))
+  q <- seq(0, 55, length.out = 200)
+  demand_curve <- kind == "demand"
+  price <- if (demand_curve) 50 - 0.5 * q else 10 + 0.5 * q
+  plot(q, price, type = "n", xlim = c(0, 58), ylim = c(0, 55),
+       axes = FALSE, xlab = "Quantity", ylab = "Price")
+  plot_theme()
+  curve_col <- if (demand_curve) reading_blue else reading_teal
+  lines(q, price, lwd = 3, col = curve_col)
+  text(51, if (demand_curve) 22 else 37,
+       if (demand_curve) "D" else "S", col = curve_col, font = 2)
+  # A and B mark a price change on the same curve. Move their coordinates
+  # if you change the curve equations above.
+  if (stage >= 1) {
+    p1 <- if (demand_curve) 38 else 22
+    p2 <- if (demand_curve) 30 else 30
+    q1 <- if (demand_curve) 24 else 24
+    q2 <- if (demand_curve) 40 else 40
+    points(c(q1, q2), c(p1, p2), pch = 19, cex = 1.4, col = reading_pink)
+    text(q1 - 2.4, p1 + 2.7, "A", col = reading_pink, font = 2)
+    text(q2 + 2.3, p2 + 2.5, "B", col = reading_pink, font = 2)
+    arrows(q1 + 2, p1 - 1, q2 - 2, p2 + 1,
+           length = .12, lwd = 2.2, col = reading_pink)
+  }
+  if (stage >= 2) {
+    shifted <- if (demand_curve) 57.5 - 0.5 * q else 17.5 + 0.5 * q
+    lines(q, shifted, lwd = 3, col = reading_orange)
+    text(51, if (demand_curve) 30 else 44,
+         if (demand_curve) expression(D[1]) else expression(S[1]),
+         col = reading_orange, font = 2)
+    arrows(25, if (demand_curve) 39 else 22,
+           if (demand_curve) 32 else 18,
+           if (demand_curve) 42.5 else 29.5,
+           length = .12, lwd = 2.2, col = reading_orange)
+  }
+  dev.off()
+}
+invisible(lapply(0:2, function(i) single_curve_frame(sprintf("figures/demand-%s.svg", i), "demand", i)))
+invisible(lapply(0:2, function(i) single_curve_frame(sprintf("figures/supply-%s.svg", i), "supply", i)))
+```
+
+## Micro foundations for macroeconomics
+
+**Macro I**
+
+This short review revisits the microeconomic ideas we will use to understand economy-wide outcomes.
+
+By the end of this lecture, you should be able to:
+
+- use a production possibility frontier to explain scarcity, opportunity cost, and comparative advantage;
+- distinguish movements along demand and supply curves from shifts in those curves;
+- solve a market equilibrium and predict the effect of a demand or supply shock;
+- explain where this microeconomic toolkit appears in macroeconomics.
+
+### 📚 Reading
+
+Case, Fair, and Oster, *Principles of Macroeconomics*, Chapters 2, 3, and 4.
+
+## Why micro matters for macro
+
+Macroeconomics studies totals, but those totals come from connected decisions.
+
+| Micro foundation | Later use in Macro I |
+|---|---|
+| scarcity and opportunity cost | consumption, saving, and public spending choices |
+| production possibilities | productive capacity and long-run growth |
+| demand and supply | goods, labour, and financial markets |
+| equilibrium and comparative statics | output, employment, interest rates, and prices |
+| elasticity and surplus | responsiveness and the gains from exchange |
+
+The same method recurs: 
+
+- specify behaviour
+- impose constraints 
+- solve equilibrium
+- change one assumption
+
+## Scarcity creates an economic problem
+
+Scarcity means that available resources cannot satisfy every possible use.
+
+It forces three linked questions:
+
+- What should the economy produce?
+- How should it combine labour, capital, and natural resources?
+- Who receives the resulting goods and services?
+
+The constraint may involve time, productive capacity, finance, or institutions.
+
+## Opportunity cost identifies the relevant trade-off
+
+The **opportunity cost** of an action is the value of the best alternative forgone.
+
+Suppose your next two hours could be used for:
+
+| Choice | Value to you |
+|---|---:|
+| attend the lecture | £32 |
+| work a paid shift | £24 |
+| revise independently | £18 |
+| meet friends | £15 |
+
+If you attend, the opportunity cost is **£24**, not £57 and not zero.
+
+## A production possibility frontier
+
+A **production possibility frontier (PPF)** shows the maximum feasible combinations of two outputs, given resources and technology.
+
+- Points **on** the frontier use resources efficiently.
+- Points **inside** the frontier are feasible but inefficient.
+- Points **outside** the frontier are not currently feasible.
+
+The frontier describes a constraint. Preferences determine which feasible point society chooses.
+
+An interior point may reflect unused labour or other resources. 
+
+More resources or better technology can shift the frontier outwards.
+
+## Current consumption and future capacity
+
+<div class="plot-stack"><img src="figures/ppf-0.svg" alt="Production possibility frontier"><ul class="incremental plot-overlays"><li><img src="figures/ppf-1.svg" alt="Point A on the production possibility frontier"></li><li><img src="figures/ppf-2.svg" alt="Movement from point A to point B"></li><li><img src="figures/ppf-3.svg" alt="Trade-off between current consumption and capital goods"></li></ul></div>
+
+<div class="plot-caption">The production possibility frontier (PPF) shows the trade-off between capital goods and consumption goods. Advance to reveal A, the move to B, and the opportunity cost.</div>
+
+## Reading the slope of the PPF
+
+The slope of the **production possibility frontier (PPF)** measures opportunity cost: how many consumption goods must be given up for one more capital good.
+
+<div class="equation-box">
+$$\text{Opportunity cost of one more capital good}
+= -\frac{\Delta \text{consumption goods}}{\Delta \text{capital goods}}$$
+</div>
+
+Moving towards more capital goods sacrifices current consumption. Economists call the absolute value of this slope the **marginal rate of transformation (MRT)**.
+
+The frontier **curves outwards from the origin** and gets steeper as we move right. 
+
+Each additional capital good then requires giving up more consumption goods, because resources differ in their suitability across uses.
+
+## Comparative advantage and specialisation
+
+Imagine Robinson Crusoe living alone on an island. Friday joins him. Both can fish or collect coconuts, but at different rates.
+
+| In one hour | Robinson Crusoe | Friday |
+|---|---:|---:|
+| Fish | 12 | 6 |
+| Coconuts | 6 | 12 |
+
+One fish costs Robinson **½ coconut** but Friday **2 coconuts**. Robinson has a **comparative advantage** in fish; Friday has one in coconuts.
+
+If each divides the hour equally, together they produce **9 fish and 9 coconuts**. If Robinson fishes and Friday collects coconuts, they produce **12 of each**. Specialisation creates scope for trade.
+
+## Markets coordinate separate decisions
+
+Households and firms make plans independently.
+
+The market price carries information and provides an incentive to revise those plans.
+
+- Demand describes buyers' planned purchases.
+- Supply describes sellers' planned production.
+- Equilibrium makes the plans mutually consistent.
+
+Quantity demanded and quantity supplied are flows measured over a stated period.
+
+## Demand as a function
+
+For a good $x$, quantity demanded depends on its own price and other determinants:
+
+$$Q_x^d=D(P_x,Y,W,P_r,T,E,N).$$
+
+| Symbol | Meaning | Effect on demand for $x$ |
+|---|---|---|
+| $P_x$ | own price | higher $P_x$ usually lowers $Q_x^d$ |
+| $Y$, $W$ | household income, wealth | usually raise demand for a normal good |
+| $P_r$ | prices of related goods | depends on substitutes or complements |
+| $T$, $E$, $N$ | tastes, expectations, number of buyers | depends on the change |
+
+The **demand curve** varies $P_x$ while holding $Y,W,P_r,T,E,N$ fixed. Changes in these other determinants shift the curve.
+
+## Movement along demand or a shift?
+
+$$Q^d = a - bP, \qquad b>0.$$
+
+<div class="concept-plot plot-stack"><img src="figures/demand-0.svg" alt="Downward-sloping demand curve"><ul class="incremental plot-overlays"><li><img src="figures/demand-1.svg" alt="A rise in price moves along the demand curve from B to A"></li><li><img src="figures/demand-2.svg" alt="A change in another determinant shifts demand to the right"></li></ul></div>
+
+<div class="plot-caption">First, change the good's own price: move along D. Then, change another determinant: D shifts.</div>
+
+Higher own price usually lowers quantity demanded through substitution and income effects. 
+
+The inverse form, $P=(a-Q^d)/b$, puts price on the vertical axis.
+
+## Train journeys and the bus fare
+
+Suppose weekly demand is:
+
+$$Q^d = 80 - 4P + 0.02Y + 2P_b,$$
+
+where $P$ is the rail fare, $Y$ is weekly income, and $P_b$ is the bus fare.
+
+At $P=20$, $Y=1{,}000$, and $P_b=10$:
+
+$$Q^d = 80 - 80 + 20 + 20 = 40.$$
+
+If the bus fare rises to 15, demand for train journeys rises to 50. The positive cross-price effect identifies the two services as substitutes.
+
+## Household demand and total spending
+
+Suppose many households expect higher incomes next year and bring forward some purchases.
+
+<ul class="incremental">
+<li><strong>One market:</strong> demand for goods such as furniture rises. At the original price, planned purchases exceed available supply.</li>
+<li><strong>Across the economy:</strong> income, wealth, and expectations influence how much households plan to spend. Changes shared by many households affect planned aggregate expenditure.</li>
+<li><strong>Important distinction:</strong> a market demand curve varies the price of one good. Macroeconomic demand concerns total spending and the overall price level; it is not obtained by simply adding these single-good diagrams.</li>
+</ul>
+
+## Supply as a function
+
+For a good $x$, quantity supplied depends on its own price and production conditions:
+
+$$Q_x^s=S(P_x,P_i,A,P_o,N_f,E).$$
+
+| Symbol | Meaning | Effect on supply of $x$ |
+|---|---|---|
+| $P_x$ | own price | higher $P_x$ usually raises $Q_x^s$ |
+| $P_i$ | input prices | higher costs usually reduce supply |
+| $A$ | productivity or technology | improvements usually raise supply |
+| $P_o$ | prices of other goods firms could produce | firms may switch production |
+| $N_f$, $E$ | number of firms, expected future prices | depends on the change and timing |
+
+The **supply curve** varies $P_x$ while holding other determinants fixed. Changes in them shift the curve.
+
+## Movement along supply or a shift?
+
+$$Q^s = c + dP, \qquad d>0.$$
+
+<div class="concept-plot plot-stack"><img src="figures/supply-0.svg" alt="Upward-sloping supply curve"><ul class="incremental plot-overlays"><li><img src="figures/supply-1.svg" alt="A rise in price moves along the supply curve from A to B"></li><li><img src="figures/supply-2.svg" alt="Higher input costs shift supply to the left"></li></ul></div>
+
+<div class="plot-caption">First, change the good's own price: move along S. Then, raise input costs: S shifts left.</div>
+
+Increasing marginal cost helps explain the upward slope. 
+
+The inverse form, $P=(Q^s-c)/d$, puts price on the vertical axis.
+
+## Bakery output and input costs
+
+Suppose daily supply is:
+
+$$Q^s = -20 + 3P - 0.5W + 4A,$$
+
+where $P$ is the bakery's output price, $W$ is an input-cost index, and $A$ is a productivity index.
+
+At $P=20$, $W=40$, and $A=5$:
+
+$$Q^s = -20 + 60 - 20 + 20 = 40.$$
+
+If $W$ rises to 52, supply falls to 34 at the same price. That is a leftward shift, not movement along the supply curve.
+
+## Firm supply and total output
+
+Suppose energy becomes more expensive for many producers, not only the bakery.
+
+<ul class="incremental">
+<li><strong>One market:</strong> higher input costs reduce the quantity a firm is willing to supply at each output price. Its supply curve shifts left.</li>
+<li><strong>Across the economy:</strong> wages, energy prices, and productivity influence costs in many industries at once. These common conditions matter for total production.</li>
+<li><strong>Longer-run contrast:</strong> a broad improvement in productivity lets firms produce more with given resources. This links firm supply to the outward shift of the production possibility frontier.</li>
+</ul>
+
+## Market equilibrium
+
+Equilibrium requires planned purchases to equal planned sales:
+
+$$Q^d(P^*) = Q^s(P^*).$$
+
+The equilibrium price $P^*$ is **endogenous** because the model determines it.
+
+Income, technology, and input costs are **exogenous** in this simple model because we take them as given. A larger macro model may determine them too.
+
+Here we clear **one product market**. Macroeconomic equilibrium must also account for interactions with the labour and financial markets.
+
+## Solving equilibrium with equations
+
+Suppose:
+
+$$Q^d = 100 - 2P, \qquad Q^s = 10 + P.$$
+
+Set demand equal to supply:
+
+$$100 - 2P = 10 + P.$$
+
+Therefore:
+
+$$P^* = 30, \qquad Q^* = 40.$$
+
+Always substitute the price back into both equations. Each must return the same quantity.
+
+## Equilibrium on the graph
+
+<div class="plot-stack"><img src="figures/equilibrium-0.svg" alt="Demand and supply curves"><ul class="incremental plot-overlays"><li><img src="figures/equilibrium-1.svg" alt="Equilibrium point"></li><li><img src="figures/equilibrium-2.svg" alt="Equilibrium price and quantity"></li></ul></div>
+
+<div class="plot-caption">Advance to reveal the equilibrium point, then its price and quantity.</div>
+
+## Disequilibrium creates pressure for adjustment
+
+At a price below equilibrium:
+
+$$Q^d > Q^s.$$
+
+There is excess demand. Buyers compete for scarce output and the price tends to rise.
+
+At a price above equilibrium:
+
+$$Q^s > Q^d.$$
+
+There is excess supply. Unsold inventories encourage sellers to reduce the price or production.
+
+The speed and form of adjustment depend on institutions. Prices do not always change instantly.
+
+## Comparative statics
+
+Comparative statics compares one equilibrium with another after an exogenous change.
+
+1. Identify the variable that changed.
+2. Decide which curve shifts and in which direction.
+3. Find the new intersection.
+4. State the changes in equilibrium price and quantity.
+
+The method compares endpoints. It does not describe the time path between them.
+
+## An increase in demand
+
+<div class="plot-stack shock-plot"><img src="figures/equilibrium-2.svg" alt="Initial market equilibrium"><ul class="incremental plot-overlays"><li><img src="figures/demand-shift.svg" alt="Demand shifts right and equilibrium price and quantity rise"></li></ul></div>
+
+**Macro connection:** 
+
+<ul class="incremental shock-notes">
+<li>If many households bring purchases forward, planned aggregate expenditure rises.</li>
+<li>With spare capacity, firms can increase <strong>output and employment</strong>.</li>
+<li>When capacity is tight, more of the response may appear in the <strong>overall price level</strong>.</li>
+<li>The single-market diagram shows the direction of a shift, but it does not determine the economy-wide split between output and prices.</li>
+</ul>
+
+## An adverse supply shock
+
+<div class="plot-stack shock-plot"><img src="figures/equilibrium-2.svg" alt="Initial market equilibrium"><ul class="incremental plot-overlays"><li><img src="figures/supply-shift.svg" alt="Supply shifts left, price rises and quantity falls"></li></ul></div>
+
+**Macro connection:** 
+
+<ul class="incremental shock-notes">
+<li>If energy costs rise across many industries, producing the same total output becomes more expensive.</li>
+<li><strong>Real output may fall</strong> while the <strong>overall price level may rise</strong>.</li>
+<li>Firms' responses also depend on wages, productivity, and demand, so a single-market graph cannot by itself quantify the economy-wide effect.</li>
+</ul>
+
+## Two shifts may leave one outcome ambiguous
+
+Suppose demand rises while supply falls.
+
+- Both shifts raise the equilibrium price.
+- The demand shift raises equilibrium quantity.
+- The supply shift lowers equilibrium quantity.
+
+Price therefore rises, but the change in quantity depends on the relative sizes of the shifts.
+
+This is a general identification lesson: observing price alone rarely tells us which shock occurred.
+
+## Elasticity measures responsiveness
+
+Price elasticity of demand:
+
+$$\varepsilon_d = \frac{\%\Delta Q^d}{\%\Delta P}.$$
+
+Price elasticity of supply:
+
+$$\varepsilon_s = \frac{\%\Delta Q^s}{\%\Delta P}.$$
+
+Use percentage changes because slopes depend on units. Demand is elastic when \(|\varepsilon_d|>1\) and inelastic when \(|\varepsilon_d|<1\).
+
+Elasticities help predict the size of price and quantity adjustments after a shock.
+
+
+## Worked diagnostic
+
+For each event, identify the curve, direction, and predicted equilibrium changes.
+
+| Event | First-round market effect |
+|---|---|
+| household income rises for a normal good | demand shifts right; price rises, quantity rises |
+| energy costs rise | supply shifts left; price rises, quantity falls |
+| productivity improves | supply shifts right; price falls, quantity rises |
+| expected future price rises | current demand may rise; current supply may fall |
+
+The final row needs a model of timing. Expectations can affect both sides of a market.
+
+## Summary
+
+- Scarcity makes opportunity cost unavoidable.
+- The PPF separates feasibility, efficiency, utilisation, and growth.
+- Demand and supply functions distinguish movements along curves from shifts.
+- Equilibrium makes independent plans consistent; comparative statics traces the effect of shocks.
+- Elasticity helps predict the size of adjustment.
+- The same logic underpins macro models, but aggregation introduces new mechanisms.
+
+### Next lecture
+
+Circular flow and GDP: how production, income, and expenditure become economy-wide measures.
+
+<style>
+.lecture-section { position:absolute; top:1.55em; right:2.25em; font-size:49%; color:#687581; letter-spacing:.08em; text-transform:uppercase; }
+.concept-plot { width:min(580px,63vw); aspect-ratio:8.5 / 4.3; }
+.shock-plot { width:min(580px,64vw); }
+.shock-notes { font-size:90%; margin-top:.25em; }
+.shock-notes li { line-height:1.12; margin:.2em 0; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ var section='Introduction';
+ var sectionStarts={
+  'Scarcity creates an economic problem':'Scarcity and choice',
+  'Markets coordinate separate decisions':'Demand and supply',
+  'Market equilibrium':'Equilibrium',
+  'Comparative statics':'Market shocks',
+  'Surplus and market efficiency':'Market efficiency',
+  'Summary':'Conclusions'
+ };
+ document.querySelectorAll('div.slide').forEach(function(slide){
+  var heading=slide.querySelector('h1');
+  if(!heading)return;
+  var title=heading.textContent.trim();
+  if(title.startsWith('Lecture 2:'))return;
+  if(sectionStarts[title])section=sectionStarts[title];
+  var label=document.createElement('span');
+  label.className='lecture-section';
+  label.textContent=section;
+  slide.appendChild(label);
+ });
+});
+</script>

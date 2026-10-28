@@ -1,0 +1,678 @@
+---
+title: "Lecture 4: Inflation, unemployment, and interest rates"
+subtitle: "Macro I"
+author: "Dr Theodoros Arvanitopoulos"
+date: ""
+output:
+  slidy_presentation:
+    self_contained: true
+    slide_level: 2
+    footer: "Macro I - Lecture 4"
+css: ../../macro1.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
+blue <- '#003b70'; teal <- '#007c83'; orange <- '#b84713'; grey <- '#6c7680'
+# Each graph is rendered in R at identical dimensions for every reveal state.
+# All images are embedded, so students need only the Rmd and shared CSS.
+build <- function(id, captions, draw) {
+  cat(sprintf('<div class="graph-build" id="%s" tabindex="0" aria-label="Step-by-step diagram">', id))
+  for (s in seq_along(captions)) {
+    f <- tempfile(fileext='.png')
+    png(f, width=1440, height=600, res=150, bg='white')
+    par(mar=c(3.5,4.2,1.5,2), mgp=c(2.4,.6,0), family='sans', cex=1.12)
+    draw(s); dev.off()
+    cat(sprintf('<figure class="build-state"%s><img alt="%s" src="%s"><figcaption>%s</figcaption></figure>',
+        if(s>1) ' hidden' else '', captions[s], knitr::image_uri(f), captions[s]))
+    unlink(f)
+  }
+  cat('<div class="build-controls"><button type="button" data-dir="-1">Previous step</button> <span class="build-count"></span> <button type="button" data-dir="1">Next step</button></div></div>')
+}
+axes <- function(xmax=240, ymax=2.3, xlab='Labour, L', ylab='Real wage, w = W/P') {
+  plot(NA, xlim=c(0,xmax), ylim=c(0,ymax), xlab=xlab, ylab=ylab,
+       axes=FALSE, xaxs='i', yaxs='i', bty='n')
+  axis(1, col=grey, col.axis=grey); axis(2, las=1,col=grey,col.axis=grey)
+}
+point <- function(x,y,label=NULL,col=blue) {
+  segments(x,0,x,y,lty=3,col=grey); segments(0,y,x,y,lty=3,col=grey)
+  points(x,y,pch=21,bg=col,col='white',cex=1.4)
+  if(!is.null(label)) text(x+diff(par('usr')[1:2])*.025,y+diff(par('usr')[3:4])*.035,label,adj=0,col=col)
+}
+demand <- function(A=1.5,K=100,col=blue) {
+  L <- seq(12,235,length.out=400)
+  lines(L,(2/3)*A*K^(1/3)*L^(-1/3),lwd=3,col=col)
+}
+supply <- function(b=100,col=teal) {
+  L <- seq(0,230,length.out=100); lines(L,L/b,lwd=3,col=col)
+}
+# Dated official release: live download first, verified embedded values offline.
+ons_page <- 'https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/september2026'
+ons_url <- paste0('https://www.ons.gov.uk/download/table?format=csv&uri=',
+ '%2Femploymentandlabourmarket%2Fpeopleinwork%2Femploymentandemployeetypes%2Fbulletins%2Femploymentintheuk%2Fseptember2026%2F8422d397.json')
+ons <- data.frame(Measure=c('Employment, 16+ (thousands)','Employment rate, 16-64 (%)',
+ 'Unemployment, 16+ (thousands)','Unemployment rate, 16+ (%)',
+ 'Inactive, 16-64 (thousands)','Inactivity rate, 16-64 (%)'),
+ Latest=c(34478,75.1,1778,4.9,9121,20.9),Quarter=c(66,0,11,0,-11,-.1),Year=c(243,-.1,83,.2,12,-.1))
+ons_mode <- 'embedded ONS snapshot (online download unavailable)'
+tryCatch({
+ f <- tempfile(fileext='.csv')
+ download.file(ons_url,f,quiet=TRUE,mode='wb')
+ raw <- read.csv(f,skip=3,check.names=FALSE,stringsAsFactors=FALSE)
+ stopifnot(nrow(raw)>=6, ncol(raw)>=6)
+ v <- function(x) as.numeric(gsub(',','',x))
+ vals <- cbind(v(raw[1:6,2]),v(raw[1:6,4]),v(raw[1:6,6]))
+ stopifnot(all(is.finite(vals)), vals[1,1]>10000, vals[2,1]<100)
+ ons[,2:4] <- vals; ons_mode <- 'downloaded from ONS'; unlink(f)
+}, error=function(e) message('Using verified embedded ONS fallback: ',conditionMessage(e)))
+```
+
+## Inflation, unemployment, and interest rates
+
+<style>
+/* Lecture-specific layout; typography and colours come from the shared CSS. */
+div.slide h1 { margin-right: 0; }
+.graph-build { max-width: 1100px; margin: .25em auto; }
+.graph-build figure { margin: 0; }
+.graph-build img { width: 100%; max-height: 43vh; object-fit: contain; }
+.graph-build figcaption { text-align: center; font-size: 82%; min-height: 2.4em; }
+.build-controls { text-align: center; font-size: 65%; margin: .3em; }
+.build-controls button { font: inherit; padding: .3em .6em; }
+.build-count { padding: 0 1em; }
+[hidden] { display: none !important; }
+.source { font-size: 62%; color: #555; margin-top: .5em; }
+.ons-table table { font-size: 75%; width: 100%; }
+.compact table { font-size: 85%; }
+.lecture-section { position:absolute; top:1.55em; right:2.25em; font-size:49%; color:#687581; letter-spacing:.08em; text-transform:uppercase; }
+@media print { .build-controls {display:none} }
+</style>
+
+We now measure changes in prices, classify people's labour-market status, and distinguish the money return on a loan from its purchasing-power return.
+
+By the end of this lecture, you should be able to:
+
+- Calculate a price index and distinguish inflation from a change in the price level.
+- Classify labour-market status and calculate unemployment, participation, and employment rates.
+- Derive labour demand, build aggregate labour supply, and solve for equilibrium.
+- Explain wage rigidity and job search using the model and its limitations.
+- Calculate nominal and real interest rates, including the exact Fisher relationship.
+
+### 📚 Reading
+
+Case, Fair, and Oster, *Principles of Macroeconomics*, Chapter 7.
+
+## Inflation and the price level
+
+**Inflation** is a sustained increase in the general price level. Individual prices can rise or fall while the overall index increases. A one-off increase in an index raises the price level; continuing inflation requires further increases.
+
+\[
+\pi_t=\frac{P_t-P_{t-1}}{P_{t-1}}\times100.
+\]
+
+*Example:* a price index moves from 100 to 110, then to 115.5.
+
+- Inflation is initially 10%, then 5%: this is **disinflation**.
+- Prices are still 15.5% above the starting level.
+- **Deflation** would require the general price index to fall.
+
+## The consumer price index
+
+A price index combines many prices using their importance in household spending. In a simple fixed-basket example:
+
+The **consumer price index (CPI)** in this example compares the cost of the same basket with its cost in the base period:
+
+\[
+CPI_t=\frac{\text{cost of the fixed basket at current prices}}{\text{cost of the same basket at base-period prices}}\times100.
+\]
+
+\[
+P_t^L=\frac{\sum_j p_{jt}q_{j0}}{\sum_j p_{j0}q_{j0}}\times100.
+\]
+
+Here \(p_{jt}\) is the current price of item \(j\), and \(q_{j0}\) is its base-period quantity. Holding quantities fixed isolates price changes.
+
+The index equals 100 in the base period. An index of 175 means the basket costs 75% more than in that period; it does not automatically mean this year's inflation is 75%.
+
+## CPI: a worked example
+
+The basket contains **four apples and two bananas**.
+
+| Year | Apple price | Banana price | Cost of fixed basket |
+|---|---:|---:|---:|
+| 2018 | £1 | £2 | \(4(1)+2(2)=£8\) |
+| 2020 | £2 | £3 | \(4(2)+2(3)=£14\) |
+
+::: incremental
+
+\[
+CPI_{2018}=100,\qquad CPI_{2020}=\frac{14}{8}100=175.
+\]
+
+\[
+\text{Price increase, 2018–2020}=\frac{175-100}{100}100=75\%.
+\]
+
+This is the **two-year cumulative increase**, not an annual inflation rate.
+
+:::
+
+## Weighted averages
+
+Weights determine how much each price change contributes to the index.
+
+*Example:* suppose three assessments contribute 20%, 30%, and 50% to a module mark. With grades of 60, 70, and 80, the overall mark is \(0.2(60)+0.3(70)+0.5(80)=73\). The simple average is 70; the final assessment has more influence because it carries half the weight. The weights add to 100%.
+
+For a fixed-basket index, base-period spending shares are:
+
+\[
+s_{j0}=\frac{p_{j0}q_{j0}}{\sum_k p_{k0}q_{k0}},\qquad
+P_t^L=100\sum_j s_{j0}\frac{p_{jt}}{p_{j0}}.
+\]
+
+In the fruit basket both initial spending shares are \(1/2\). Thus \(100[0.5(2/1)+0.5(3/2)]=175\).
+
+## Choosing the basket
+
+| Index | Quantities used | Formula |
+|---|---|---|
+| Laspeyres | Base-period basket | \(P^L=100\frac{\sum p_tq_0}{\sum p_0q_0}\) |
+| Paasche | Current basket | \(P^P=100\frac{\sum p_tq_t}{\sum p_0q_t}\) |
+| Fisher | Both baskets | \(P^F=\sqrt{P^LP^P}\) |
+
+If apples become relatively dearer, households may buy fewer apples and more bananas.
+
+::: incremental
+
+**Laspeyres:** fixes the old basket; ignoring substitution can overstate the rise in the cost of living.
+
+**Paasche:** uses the new basket; allowing substitution can understate that rise.
+
+**Fisher:** takes their geometric mean and requires both baskets.
+
+:::
+
+These are teaching examples of index construction. UK consumer indices update their weights and link periods over time.
+
+## Index calculation
+
+Keep the same prices. Suppose the current basket changes to **two apples and four bananas**.
+
+\[
+P^L=175,\qquad P^P=100\frac{2(2)+3(4)}{1(2)+2(4)}=160.
+\]
+
+\[
+P^F=\sqrt{175\times160}\approx167.33.
+\]
+
+Apples became relatively more expensive, so the current basket puts less weight on them. The measured price increase depends on which basket we hold constant.
+
+## Comparing price measures
+
+| Measure | What it covers |
+|---|---|
+| CPI | Consumer goods and services, including imported consumption |
+| CPIH | CPI plus owner-occupiers' housing costs and council tax |
+| RPI | Older UK retail-price measure with different coverage and formulae |
+| GDP deflator | Domestically produced final output, including investment and exports |
+| PPI | Prices of inputs bought or outputs sold by producers |
+
+The GDP deflator excludes imports directly. A rise in imported consumer prices can therefore affect CPI differently from the GDP deflator.
+
+## Measurement and inflation costs
+
+### Measurement
+
+Substitution, changing quality, and new goods complicate comparisons. Different households face different spending patterns and inflation experiences.
+
+### Economic consequences
+
+Unexpected inflation redistributes purchasing power between borrowers and lenders on fixed nominal contracts. Inflation can also obscure relative-price signals and increase the costs of changing prices and managing money balances.
+
+An increase in all nominal incomes alongside prices differs from a price rise with fixed nominal income.
+
+## Labour-market status
+
+**Employment:** people who work, including those temporarily away from a job. Part-time workers count as employed.
+
+**Unemployment:** people without work who have actively sought work in the previous four weeks and are available to start within two weeks. The definition also covers certain people waiting to start an arranged job.
+
+**Inactivity:** people who meet neither the employment nor unemployment definition.
+
+A student, retiree, or hospital patient can be employed, unemployed, or inactive. Status depends on work, search, and availability, rather than the person's label. Someone temporarily away from a job because of illness may still count as employed.
+
+**Survey coverage is separate:** the Labour Force Survey includes private households, NHS accommodation, and student halls, but excludes most other communal establishments. Exclusion from the survey does not mean a person is economically inactive.
+
+<p class="source">Source: <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/methodologies/aguidetolabourmarketstatistics">ONS, A guide to labour market statistics</a> (definitions and survey coverage).</p>
+
+## Population and the labour force
+
+For UK statistics, distinguish **people aged 16+** from the **16–64** age band used for headline employment and inactivity rates. People who are neither employed nor unemployed are inactive; some students, retirees, carers, and people with long-term illness fall into this group.
+
+```{r population-tree, results='asis'}
+build('population',c('Population and age scope','People aged 16+ divide into inactive and economically active','The labour force divides into unemployed and employed'),function(s){
+ par(mar=c(.2,.2,.2,.2));plot.new();plot.window(c(0,12),c(0,6))
+ text(4,5.6,'Population',font=2,cex=1.4,col=blue)
+ segments(c(4,4),c(5.2,5.2),c(1.7,7),c(4.3,4.3),col=blue,lwd=2)
+ text(1.7,3.95,'Under 16',cex=1.15);text(7,3.95,'People aged 16+',font=2,cex=1.15)
+ if(s>=2){segments(c(7,7),c(3.55,3.55),c(4.6,9.3),c(2.7,2.7),col=teal,lwd=2)
+ text(4.6,2.4,'Economically inactive',col=grey,font=2)
+ text(4.6,1.95,'Neither employed nor unemployed',cex=.8,col=grey)
+ text(4.6,1.55,'e.g., students, retirees, long-term sick',cex=.7,col=grey)
+ text(9.3,2.4,'Labour force',col=teal,font=2)}
+ if(s>=3){segments(c(9.3,9.3),c(2.0,2.0),c(7.8,10.8),c(.95,.95),col=orange,lwd=2)
+ text(7.8,.6,'Unemployed',col=orange,font=2);text(10.8,.6,'Employed',col=teal,font=2)}
+ text(10.2,5.55,'Most communal residents: not surveyed',cex=.95,col=grey)
+ text(10.2,5.15,'NHS housing and student halls: surveyed',cex=.95,col=grey)
+})
+```
+
+## Inactivity and underemployment
+
+**Discouraged workers** want work but have stopped searching. They generally count as inactive, so they are absent from the unemployment numerator.
+
+**Underemployed workers** have jobs but want, and are available for, more hours. They count as employed.
+
+*Example:* a person seeking full-time work accepts a short part-time job. Measured unemployment falls, although their desired hours remain unmet.
+
+The unemployment rate is useful alongside employment, participation, hours, and vacancies.
+
+## UK labour-market statistics
+
+**May–July 2026; seasonally adjusted. Release: 15 September 2026.**
+
+<div class="ons-table">
+
+```{r ons-table, results='asis'}
+tbl <- ons
+for(j in 2:4) tbl[,j] <- vapply(seq_len(nrow(tbl)),function(i){
+ x<-ons[i,j]; paste0(if(j>2 && x>0) '+' else '',formatC(x,format='f',digits=if(i%%2==0) 1 else 0,big.mark=','))
+},character(1))
+names(tbl)<-c('Measure and age band','Latest','Quarter change','Year change')
+cat(knitr::kable(tbl,format='html',row.names=FALSE))
+```
+
+</div>
+
+Changes in levels are **thousands of people**; changes in rates are **percentage points**. Quarter comparison: February–April 2026. Year comparison: May–July 2025.
+
+<p class="source">Source: <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/employmentintheuk/september2026">ONS Table 1</a>. `r ons_mode`. LFS estimates are subject to sampling uncertainty; interpret small quarterly movements cautiously.</p>
+
+## Labour-market rates
+
+Write \(E\) for employed people, \(U\) for unemployed people, and \(N\) for the population in the chosen age band. The **labour force** is \(LF=E+U\).
+
+\[
+LF=E+U,\qquad u=\frac{U}{E+U}\times100.
+\]
+\[
+LFPR=\frac{E+U}{N}\times100,\qquad EPR=\frac{E}{N}\times100.
+\]
+
+Here \(u\) is the **unemployment rate**, \(LFPR\) the **labour force participation rate**, and \(EPR\) the **employment-to-population rate**. Each denominator answers a different question: unemployed as a share of the labour force, or active and employed people as shares of the chosen population.
+
+**Keep age bands consistent within each fraction.** ONS headline unemployment covers 16+; headline employment and inactivity rates use 16–64. Those headline rates cannot simply be added to 100.
+
+## Rates: worked examples
+
+From the ONS table, the labour force aged 16+ is `r format(ons$Latest[1]+ons$Latest[3],big.mark=',')` thousand.
+
+\[
+u=\frac{`r ons$Latest[3]`}{`r ons$Latest[1]`+`r ons$Latest[3]`}100\approx `r round(100*ons$Latest[3]/sum(ons$Latest[c(1,3)]),1)`\%.
+\]
+
+For a separate **illustrative** population of 1,000 adults, suppose \(E=700\), \(U=50\), inactive \(=250\).
+
+\[
+LFPR=75\%,\qquad EPR=70\%,\qquad u=6.67\%.
+\]
+
+If 10 unemployed people stop searching, \(u=40/740=5.41\%\). Employment stays at 700: a lower unemployment rate need not mean more jobs.
+
+## Types of unemployment
+
+| Type | Mechanism | Example |
+|---|---|---|
+| Frictional | Search and normal turnover | Graduate searching for a first job |
+| Structural | Mismatch of skills or location | Industry closure in one region |
+| Cyclical | Weak aggregate demand | Lay-offs during a recession |
+| Seasonal | Regular seasonal activity | Tourist employment after summer |
+
+The natural rate is commonly introduced as frictional plus structural unemployment. **Full employment does not mean zero unemployment.** Institutions and matching conditions can change the natural rate over time.
+
+## The firm's hiring decision
+
+The model assumes a competitive firm, price-taking in output and factor markets, with capital fixed for the hiring decision.
+
+\[
+\max_L\ \Pi=P F(K,L)-WL-RK.
+\]
+
+\(P\): output price; \(W\): nominal wage; \(R\): rental price of capital; \(K\): capital; \(L\): labour.
+
+::: incremental
+
+\[
+\frac{\partial\Pi}{\partial L}=P F_L(K,L)-W=0
+\quad\Rightarrow\quad MPL=\frac WP=w.
+\]
+
+The **value** of marginal output equals the nominal wage: \(P\,MPL=W\). Equivalently, marginal output equals the real wage: \(MPL=w\).
+
+:::
+
+## Cobb–Douglas production
+
+Consider the Cobb–Douglas production function:
+
+\[
+Y=AK^{1/3}L^{2/3},\qquad A>0.
+\]
+
+::: incremental
+
+Differentiate with respect to labour, holding \(A,K\) fixed:
+\[
+MPL=\frac23 AK^{1/3}L^{-1/3}.
+\]
+
+Since \(\partial MPL/\partial L=-\frac29 AK^{1/3}L^{-4/3}<0\), marginal product declines as labour rises. Additional workers share a fixed capital stock.
+
+:::
+
+## Deriving labour demand
+
+Set marginal product equal to the real wage:
+\[
+\frac23 AK^{1/3}L^{-1/3}=w.
+\]
+
+::: incremental
+
+\[
+L^{1/3}=\frac{2AK^{1/3}}{3w}
+\quad\Rightarrow\quad
+L^D=\left(\frac{2AK^{1/3}}{3w}\right)^3
+=\frac{8A^3K}{27w^3}.
+\]
+
+A higher wage reduces labour demanded. Higher productivity \(A\) or more capital \(K\) raises labour demand at any given wage.
+
+:::
+
+## Labour demand
+
+For \(A=3/2\) and \(K=100\), \(L^D=100/w^3\). The plotted curve follows this equation.
+
+```{r demand-build, results='asis'}
+build('demand',c('The inverse demand curve: w = (100/L)^(1/3)','At w = 1, the firm demands L = 100','A higher wage moves along the curve: at w = 1.25, L = 51.2'),function(s){
+ axes(); demand(); text(218,.88,'Demand',col=blue)
+ if(s>=2) point(100,1,'A')
+ if(s>=3){point(51.2,1.25,'B',orange);arrows(93,1.04,59,1.21,length=.09,col=orange,lwd=2)}
+})
+```
+
+## Labour-demand shifts
+
+A productivity improvement from \(A=1.5\) to \(A=1.8\) increases labour demanded at \(w=1\) from 100 to 172.8. Capital stays at 100.
+
+```{r demand-shift, results='asis'}
+build('demand-shift',c('Initial demand at A = 1.5','Higher productivity shifts the entire curve outward','At the same wage, employment demand rises from 100 to 172.8'),function(s){
+ axes();demand(); text(215,.88,'D0',col=blue)
+ if(s>=2){demand(A=1.8,col=orange);text(215,1.1,'D1',col=orange)}
+ if(s>=3){point(100,1);point(172.8,1,col=orange);arrows(108,1,163,1,length=.1,lwd=2,col=orange)}
+})
+```
+
+## Work and leisure
+
+Let time available be \(T\), leisure \(\ell\), and hours worked \(h=T-\ell\). With non-labour income \(V\), real consumption satisfies:
+
+\[
+c=w(T-\ell)+V.
+\]
+
+An extra hour of leisure costs \(w\) units of consumption. At an interior optimum, \(MU_\ell/MU_c=w\).
+
+- **Substitution effect:** a higher wage makes leisure more expensive, encouraging more work.
+- **Income effect:** higher income can increase desired leisure, encouraging less work.
+
+Assume the substitution effect dominates over the range shown.
+
+## Individual labour supply
+
+Under that assumption, a higher real wage raises hours supplied. The numerical curve below is illustrative, with \(h=10w\).
+
+```{r individual, results='asis'}
+build('individual',c('Individual labour supply','At w = 1, the individual supplies 10 hours','At w = 1.5, the individual supplies 15 hours'),function(s){
+ axes(24,2.2,'Individual hours, h'); lines(c(0,22),c(0,2.2),lwd=3,col=teal)
+ if(s>=2) point(10,1,'A',teal)
+ if(s>=3){point(15,1.5,'B',orange);arrows(10.7,1.07,14.3,1.43,length=.1,lwd=2,col=orange)}
+})
+```
+
+*Reading the graph:* a higher real wage moves the worker along this supply curve to more hours of work.
+
+## Aggregate labour supply
+
+At each real wage, **add workers' hours horizontally**.<br>Ten identical workers each supply \(h=10w\), giving \(L^S=10h=100w\).
+
+```{r aggregate, results='asis'}
+build('aggregate',c('One individual: h = 10w','Ten individuals: total labour supply L = 100w','At w = 1, each supplies 10 hours and together they supply 100'),function(s){
+ axes(160,1.6,'Hours of labour');lines(c(0,16),c(0,1.6),col=grey,lwd=2);text(20,1.4,'Individual',adj=0,col=grey)
+ if(s>=2){supply();text(105,1.4,'Aggregate',col=teal,adj=0)}
+ if(s>=3){segments(0,1,100,1,lty=3,col=grey);point(10,1,col=grey);point(100,1,col=teal);arrows(20,1,89,1,length=.1,col=teal,lwd=2)}
+})
+```
+
+*Reading the graph:* at \(w=1\), ten workers each supply 10 hours, so aggregate supply is 100 hours.
+
+## Labour-supply shifts
+
+Migration, labour-force participation, non-labour income, and taxes can shift supply. Their effects depend on preferences and circumstances.
+
+Here an increase in the number of otherwise identical workers changes \(L^S=100w\) to \(L^S=140w\).
+
+```{r supply-shift, results='asis'}
+build('supply-shift',c('Initial aggregate supply','More workers increase supply at each wage','At w = 1, labour supplied rises from 100 to 140'),function(s){
+ axes();supply();text(170,1.9,'S0',col=teal)
+ if(s>=2){supply(140,orange);text(215,1.65,'S1',col=orange)}
+ if(s>=3){point(100,1,col=teal);point(140,1,col=orange);arrows(108,1,132,1,length=.1,col=orange,lwd=2)}
+})
+```
+
+## Solving equilibrium
+
+Let \(A=3/2\), \(K=100\), and \(L^S=100w\).
+
+\[
+L^D=\frac{8}{27}\frac{(3/2)^3(100)}{w^3}=\frac{100}{w^3}.
+\]
+
+::: incremental
+
+\[
+L^D=L^S\quad\Rightarrow\quad\frac{100}{w^3}=100w
+\quad\Rightarrow\quad w^4=1.
+\]
+
+The positive solution is \(w^*=1\), giving \(L^*=100\). Check: each equation returns 100 at that wage.
+
+:::
+
+## Labour-market equilibrium
+
+At equilibrium, firms want to hire exactly the amount of labour households want to supply. The intersection gives the same answer as the algebra.
+
+```{r equilibrium, results='asis'}
+build('equilibrium',c('Firms demand labour','Households supply labour','The intersection gives w* = 1 and L* = 100'),function(s){
+ axes();demand();text(215,.88,'Demand',col=blue)
+ if(s>=2){supply();text(176,1.95,'Supply',col=teal)}
+ if(s>=3){point(100,1,col=orange);text(80,1.48,'Equilibrium',col=orange)}
+})
+```
+
+## A wage above equilibrium
+
+At a real wage of \(\bar w=1.25\), \(L^D=100/1.25^3=51.2\), while \(L^S=125\). Excess supply is **73.8 labour units**.
+
+```{r wage-floor, results='asis'}
+build('wage-floor',c('Initial competitive equilibrium','A binding wage floor is set at 1.25','Firms demand 51.2 and households supply 125','The gap is excess labour supply: 125 - 51.2 = 73.8'),function(s){
+ axes();demand();supply();point(100,1,col=grey)
+ if(s>=2){segments(0,1.25,235,1.25,col=orange,lwd=2);text(180,1.36,'Wage floor',col=orange)}
+ if(s>=3){point(51.2,1.25,col=blue);point(125,1.25,col=teal)}
+ if(s>=4){arrows(51.2,1.65,125,1.65,code=3,angle=90,length=.07,lwd=2,col=orange);text(88.1,1.82,'Excess supply: 73.8',col=orange)}
+})
+```
+
+## Interpreting the model
+
+The frictionless competitive model clears the market at \(w^*\). A binding wage floor creates excess supply in this model.
+
+Actual unemployment also reflects search, mismatches, and weak aggregate demand. Market clearing here does not explain away the measured frictional or structural unemployment discussed earlier.
+
+Our labour quantities are hours or standardised labour units. Calling the gap a number of unemployed people requires fixed hours per worker. Minimum-wage employment effects also depend on market structure, so the diagram is a conditional prediction.
+
+## Wage rigidity
+
+| Mechanism | Why wages may remain above clearing levels |
+|---|---|
+| Wage floors | A legal minimum constrains downward adjustment |
+| Collective bargaining | Negotiated wages reflect worker and employer bargaining |
+| Efficiency wages | Higher pay may reduce turnover, improve recruitment or discourage shirking |
+| Contracts and adjustment | Wages may adjust slowly after a fall in labour demand |
+
+An efficiency wage can be a deliberate choice by the firm. Paying less need not maximise profits if it reduces productivity or increases turnover.
+
+## Job search and matching
+
+Workers differ in skills, location, and preferences. Firms differ in job requirements. Both sides have incomplete information.
+
+- A vacancy and an unemployed worker can coexist without being a suitable match.
+- Normal job turnover generates frictional unemployment.
+- Sectoral change can require retraining or relocation, generating structural unemployment.
+
+In the next Keynesian block, lower spending reduces production and hiring. This provides the link to **cyclical unemployment**.
+
+## Nominal interest rates
+
+The nominal rate measures the premium in money over a specified period:
+
+\[
+i=\frac{\text{repayment}-\text{principal}}{\text{principal}}.
+\]
+
+For a £1,000 one-year loan repaid as £1,100:
+\[
+i=\frac{1100-1000}{1000}=0.10=10\%.
+\]
+
+The borrower pays 10% more pounds. Whether those pounds buy 10% more goods depends on inflation over the same year.
+
+## Purchasing power
+
+Suppose nominal interest is \(i=10\%\) and inflation is \(\pi=6\%\).
+
+- £1,000 today requires £1,060 next year to preserve purchasing power.
+- The lender receives £1,100: £40 above that purchasing-power benchmark.
+- Deflating the full repayment gives \(1100/1.06=£1,037.74\) in today's prices.
+
+\[
+r=\frac{1037.74-1000}{1000}\approx3.77\%.
+\]
+
+The approximation \(10\%-6\%=4\%\) is close, but it is not the exact return.
+
+## The Fisher relationship
+
+A loan of \(B\) buys \(B/P_t\) units today and returns \(B(1+i)/P_{t+1}\) units next year.
+
+::: incremental
+
+\[
+1+r=\frac{B(1+i)/P_{t+1}}{B/P_t}
+=\frac{1+i}{1+\pi}.
+\]
+
+\[
+r=\frac{i-\pi}{1+\pi},\qquad i=r+\pi+r\pi.
+\]
+
+For modest rates, the product \(r\pi\) is small, giving \(r\approx i-\pi\). Enter rates as decimals when using these formulae.
+
+Use expected inflation \(\pi^e\) when the loan is agreed, and actual inflation \(\pi\) to calculate the realised return.
+
+:::
+
+## Expected and realised returns
+
+When a loan is agreed, future inflation is uncertain. Borrowers and lenders use **expected inflation** to assess the expected real return.
+
+After the year ends, actual inflation determines the realised real return. Unexpectedly high inflation reduces the lender's purchasing-power return on a fixed nominal loan.
+
+*Example:* at zero nominal interest and 4% inflation, the exact real return is \(1/1.04-1=-3.85\%\). The account balance stays constant while its purchasing power falls.
+
+## Loanable funds
+
+Savers supply funds; households, firms, and governments borrow. A higher real interest rate can encourage saving and discourage investment, under the assumptions illustrated.
+
+```{r loans, results='asis'}
+build('loans',c('Borrowers demand funds','Savers supply funds','The intersection determines the equilibrium real interest rate'),function(s){
+ axes(200,8,'Loanable funds','Real interest rate (%)')
+ lines(c(0,200),c(7,1),col=blue,lwd=3);text(167,1.4,'Demand',col=blue)
+ if(s>=2){lines(c(0,200),c(1,7),col=teal,lwd=3);text(168,6.8,'Supply',col=teal)}
+ if(s>=3){point(100,4,col=orange);text(80,5,'Equilibrium',col=orange)}
+})
+```
+
+## Practice
+
+1. In the fruit example, calculate the index if bananas cost £4 in 2020.
+2. Explain why someone leaving the labour force can reduce the unemployment rate.
+3. With \(L^D=100/w^3\), calculate labour demand at \(w=2\).
+4. Calculate the exact real return when \(i=5\%\), \(\pi=3\%\).
+
+## Summary
+
+- Price indices weight different goods. Inflation is a percentage change in an index over a stated period.
+- Labour-force status and the denominator determine how to interpret a labour-market rate.
+- Profit maximisation yields \(MPL=w\). Supply, demand, and their shifts determine the competitive equilibrium.
+- Wage rigidity and search help explain persistent unemployment; weak demand adds a cyclical mechanism.
+- The exact real return is \((1+i)/(1+\pi)-1\).
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ var section='Introduction';
+ document.querySelectorAll('div.slide').forEach(function(slide){
+  var heading=slide.querySelector('h1'); if(!heading)return;
+  var title=heading.textContent.trim();
+  if(title.startsWith('Lecture 4:'))return;
+  if(title==='Inflation and the price level')section='Inflation';
+  if(title==='Labour-market status')section='Unemployment';
+  if(title.startsWith('The firm'))section='Labour market model';
+  if(title==='Nominal interest rates')section='Interest rates';
+  if(title==='Practice')section='Practice';
+  if(title==='Summary')section='Conclusions';
+  var label=document.createElement('span'); label.className='lecture-section'; label.textContent=section; slide.appendChild(label);
+ });
+ document.querySelectorAll('.graph-build').forEach(function(b){
+  var states=Array.from(b.querySelectorAll('.build-state')), n=0;
+  function show(){states.forEach(function(s,i){s.hidden=i!==n;});
+   b.querySelector('.build-count').textContent='Step '+(n+1)+' of '+states.length;
+   b.querySelector('[data-dir="-1"]').disabled=n===0;
+   b.querySelector('[data-dir="1"]').disabled=n===states.length-1;}
+  b.querySelectorAll('button').forEach(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();n=Math.max(0,Math.min(states.length-1,n+Number(btn.dataset.dir)));show();});});
+  b.addEventListener('click',function(e){e.stopPropagation();});
+  b.advance=function(dir){if((dir>0&&n<states.length-1)||(dir<0&&n>0)){n+=dir;show();return true;}return false;};
+  show();
+ });
+ document.addEventListener('keydown',function(e){
+  if(e.target.matches('button,input,textarea,select,a'))return;
+  var dir=['ArrowRight',' ','PageDown'].includes(e.key)?1:['ArrowLeft','PageUp'].includes(e.key)?-1:0;
+  if(!dir)return;
+  var b=Array.from(document.querySelectorAll('.graph-build')).find(function(b){return b.getClientRects().length>0&&getComputedStyle(b.closest('.slide')).visibility!=='hidden';});
+  if(b&&b.advance(dir)){e.preventDefault();e.stopImmediatePropagation();}
+ },true);
+ window.addEventListener('beforeprint',function(){document.querySelectorAll('.graph-build').forEach(function(b){var a=b.querySelectorAll('.build-state');a.forEach(function(s,i){s.hidden=i!==a.length-1;});});});
+});
+</script>

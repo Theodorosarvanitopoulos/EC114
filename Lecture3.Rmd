@@ -1,0 +1,485 @@
+---
+title: "Lecture 3: Circular flow and GDP"
+subtitle: "Macro I"
+author: "Dr Theodoros Arvanitopoulos"
+date: ""
+output:
+  slidy_presentation:
+    font_adjustment: 0
+    footer: "Macro I - Lecture 3"
+    self_contained: true
+css: macro1.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,warning=FALSE,message=FALSE)
+dir.create("figures_v3",showWarnings=FALSE)
+blue <- "#003b70"; teal <- "#008c95"; pink <- "#e5007d"; orange <- "#e84e0f"; grey <- "#666666"
+
+flow_box <- function(x,y,label,col,w=1.45,h=.44,cex=1) {
+  rect(x-w,y-h,x+w,y+h,col=col,border=col); text(x,y,paste(label,collapse="\n"),col="white",font=2,cex=cex)
+}
+# Change this helper to style every arrow label consistently.
+flow_label <- function(x,y,label,col,...) {
+  text(x,y,label,col=col,family="Arial",font=2,cex=.8,...)
+}
+# Each stage is a complete SVG: 0 = agents and markets, 1 = real flows,
+# 2 = payments, 3 = government and trade, 4 = finance, 5 = sector boundaries.
+flow_frame <- function(file,stage) {
+  svg(file,width=12,height=6,bg="white"); par(mar=c(0,0,0,0),cex=1.18,xaxs="i",yaxs="i"); plot.new(); plot.window(c(.1,13.85),c(-.4,8.8))
+  flow_box(3,5,"Firms",teal,w=1.2)
+  flow_box(8.5,5,"Households",blue,w=1.2)
+  flow_box(5.75,7.3,c("Market for goods","and services"),orange,w=1.55,h=.55,cex=.9)
+  flow_box(5.75,2.7,c("Market for factors","of production"),orange,w=1.55,h=.55,cex=.9)
+  if(stage>=1) {
+    arrows(4.15,5.45,4.6,6.75,length=.1,lwd=2.2,col=orange); flow_label(3.5,6.15,"output",orange)
+    arrows(6.9,6.75,7.55,5.45,length=.1,lwd=2.2,col=orange); flow_label(8.35,6.2,"goods and services",orange)
+    arrows(7.55,4.55,6.9,3.25,length=.1,lwd=2.2,col=orange); flow_label(8.15,3.75,"labour, land,\nand capital",orange)
+    arrows(4.6,3.25,4.15,4.55,length=.1,lwd=2.2,col=orange); flow_label(3.55,3.75,"production\ninputs",orange)
+  }
+  if(stage>=2) {
+    arrows(7.25,5.25,4.25,5.25,length=.1,lwd=2.2,col=blue); flow_label(5.75,5.58,"consumption spending",blue)
+    arrows(4.25,4.75,7.25,4.75,length=.1,lwd=2.2,col=teal); flow_label(5.75,4.34,"wages, rent,\ninterest, and profits",teal)
+  }
+  if(stage>=3) {
+    flow_box(5.75,.95,"Government",pink,w=1.1,h=.4,cex=.86)
+    # Taxes descend vertically, then turn towards government.
+    lines(c(2.55,2.55),c(4.55,1.2),lwd=2,col=pink)
+    arrows(2.55,1.2,4.65,1.2,length=.09,lwd=2,col=pink); flow_label(3.6,1.48,"taxes",pink)
+    lines(c(9.1,9.1),c(4.55,1.2),lwd=2,col=pink)
+    arrows(9.1,1.2,6.85,1.2,length=.09,lwd=2,col=pink); flow_label(7.65,1.48,"taxes",pink)
+    # Separate parallel return paths keep both directions visible.
+    lines(c(6.85,9.55,9.55),c(.8,.8,4.22),lwd=2,col=pink)
+    arrows(9.55,4.22,9.55,4.55,length=.09,lwd=2,col=pink); flow_label(7.95,.53,"social transfers",pink)
+    lines(c(4.65,2.0,2.0),c(.8,.8,4.22),lwd=2,col=pink)
+    arrows(2.0,4.22,2.0,4.55,length=.09,lwd=2,col=pink)
+    flow_label(1.73,2.9,"government purchases",pink,srt=90)
+    flow_box(12.6,7.25,"Rest of world",grey,w=.92,cex=.8)
+    arrows(7.32,7.58,11.65,7.58,length=.09,lwd=2,col=grey); flow_label(9.45,7.86,"exports",grey)
+    arrows(11.65,6.93,7.32,6.93,length=.09,lwd=2,col=grey); flow_label(9.45,6.64,"imports",grey)
+  }
+  if(stage>=4) {
+    flow_box(10.35,2.0,c("Financial","sector"),blue,w=.65,h=.44,cex=.8)
+    # Saving leaves the right edge of households, clear of the real-flow label.
+    lines(c(9.72,10.65,10.65),c(5,5,2.78),lwd=2,col=blue)
+    arrows(10.65,2.78,10.65,2.45,length=.09,lwd=2,col=blue)
+    flow_label(10.45,3.3,"saving",blue,adj=1)
+    # Investment funding runs below government, then up the left side to firms.
+    lines(c(10.35,10.35,1.4,1.4),c(1.55,-.1,-.1,4.85),lwd=2,col=blue)
+    arrows(1.4,4.85,1.78,4.85,length=.09,lwd=2,col=blue)
+    flow_label(3.15,.18,"funds for business investment",blue)
+  }
+  if(stage>=5) {
+    # Reveal sector boundaries last. Finance is inside the domestic economy.
+    rect(.25,-.3,11.25,8.65,border=grey,lty=3,lwd=1.6)
+    text(1.65,8.37,"Domestic economy",col=grey,cex=.8)
+    rect(11.45,6.0,13.75,8.55,border=grey,lty=3,lwd=1.6)
+    text(12.6,8.27,"External sector",col=grey,cex=.78)
+  }
+  dev.off()
+}
+invisible(lapply(0:5,function(i) flow_frame(sprintf("figures_v3/flow-%s.svg",i),i)))
+```
+
+## Circular flow and GDP
+
+**Macro I**
+
+How do millions of transactions become one measure of economic production?
+
+By the end of this lecture, you should be able to:
+
+- distinguish stocks from flows and explain the circular flow of production, income, and expenditure;
+- define GDP and decide which transactions it includes;
+- calculate GDP using expenditure, income, and value added;
+- distinguish nominal GDP, real GDP, and the GDP deflator;
+- evaluate GDP as a measure of production and wellbeing.
+
+### 📚 Reading
+
+Case, Fair, and Oster, *Principles of Macroeconomics*, Chapter 6.
+
+## Stocks and flows
+
+| Stock | Flow |
+|---|---|
+| measured at a point in time | measured over a period |
+| wealth, population, capital | income, consumption, investment |
+| inventory on 31 December | production during the year |
+
+GDP is a **flow**. It records production during a stated period.
+
+Prices are neither stocks nor flows. They are values measured at particular times.
+
+## The participants and markets
+
+The circular flow organises four groups:
+
+- households;
+- firms;
+- government;
+- the rest of the world.
+
+They interact through the market for goods and services, the market for factors of production, and the financial sector.
+
+The diagram records both real activity and the payments that accompany it.
+
+## The circular flow
+
+<div class="plot-stack"><img src="figures_v3/flow-0.svg" alt="Households, firms, and markets"><ul class="incremental plot-overlays"><li><img src="figures_v3/flow-1.svg" alt="Real flows"></li><li><img src="figures_v3/flow-2.svg" alt="Payment flows"></li><li><img src="figures_v3/flow-3.svg" alt="Government and rest-of-world flows"></li><li><img src="figures_v3/flow-4.svg" alt="Saving, the financial sector, and business investment"></li><li><img src="figures_v3/flow-5.svg" alt="Domestic economy and external sector boundaries"></li></ul></div>
+
+## Households and firms
+
+<div class="flow-note"><em>Households.</em> Supply labour, land, capital, and entrepreneurship; receive wages, rent, interest, and profits. 
+
+They use income to consume, pay taxes, and save.</div>
+
+<div class="flow-note"><em>Firms.</em> Hire production inputs, produce output, and pay factor incomes.</div>
+
+<div class="flow-note"><em>Financial link.</em> Household saving supplies funds that can finance business investment.</div>
+
+<p class="flow-takeaway">One participant's payment is another participant's receipt.</p>
+
+## Government, trade, and finance
+
+<div class="flow-note"><em>Government.</em> Collects taxes, buys goods and services, and makes social transfers. 
+
+Transfers redistribute income; they do not purchase current output.</div>
+
+
+<div class="flow-note"><em>Financial sector.</em> Connects household saving with borrowing and business investment. 
+
+Buying an existing financial asset changes ownership; financing new capital supports investment in production.</div>
+
+<div class="flow-note"><em>Rest of the world.</em> Buys exports and supplies imports. Net exports equal exports minus imports.</div>
+
+<p class="flow-takeaway">The dotted boundary encloses domestic households, firms, government, markets, and finance. The separate box identifies the rest of the world.</p>
+
+
+## Output, income, and expenditure
+
+Firms receive revenue when buyers purchase final output.
+
+That revenue becomes wages, rent, interest, or profits for the owners of factors of production.
+
+Therefore:
+
+<div class="equation-box">
+$$\text{total output}=\text{total income}=\text{total expenditure}$$
+</div>
+
+This is an accounting identity. It does not claim that output equals potential output or that every market clears.
+
+## Gross domestic product
+
+**GDP is the market value of all new, final goods and services produced within a country during a given period.**
+
+Read each part of the definition:
+
+- *Market value:* puts different products into pounds.
+- *New:* excludes goods produced in earlier periods.
+- *Final:* avoids counting intermediate inputs twice.
+- *Within a country:* follows where production takes place.
+- *During a period:* makes GDP a flow, usually measured quarterly or annually.
+
+## What GDP includes
+
+For each final product, market value is its price multiplied by the quantity produced: $P\times Q$. 
+
+Adding these values gives the market value of output. For example, 100 loaves at £2 each contribute £200.
+
+GDP includes current production even when no final customer has yet purchased it.
+
+- New inventories count as investment.
+- New housing counts as residential investment.
+- Government services enter mainly at their production cost.
+- Owner-occupied housing enters through an imputed rental value.
+
+National accountants use conventions to make the boundary consistent.
+
+## What GDP excludes
+
+GDP excludes transactions that do not represent current production:
+
+- sales of used goods;
+- purchases of shares or bonds;
+- transfer payments;
+- intermediate goods counted separately from the final product.
+
+Brokerage or dealership services associated with a transaction do count because they are current services.
+
+## Does it count in GDP?
+
+<div class="gdp-quiz">
+<p>A newly produced car sold in the UK?</p><p class="incremental"><strong>Yes.</strong> It is current, final production.</p>
+<p class="incremental">A used car resold privately?</p><p class="incremental"><strong>No.</strong> It was counted when first produced.</p>
+<p class="incremental">A dealer's fee on that used car?</p><p class="incremental"><strong>Yes.</strong> The dealer provides a current service.</p>
+<p class="incremental">Bread sold to a household?</p><p class="incremental"><strong>Yes.</strong> It is a final good.</p>
+<p class="incremental">Flour bought by the bakery?</p><p class="incremental"><strong>No, not separately.</strong> Its value is included in the bread.</p>
+<p class="incremental">Bread produced and added to inventory?</p><p class="incremental"><strong>Yes.</strong> It counts as inventory investment.</p>
+</div>
+
+The question is whether current domestic production occurred.
+
+## GDP and national output
+
+GDP follows the **location of production**.
+
+**Gross national product (GNP)** values output produced by factors owned by a country's nationals, including production abroad.
+
+Production at a foreign-owned UK factory contributes to UK GDP. Production by a UK national working abroad contributes to the national measure.
+
+**Gross national income (GNI)** tracks income accruing to a country's residents. The essential distinction is *where production occurs* versus *to whom income accrues*.
+
+## Three ways to measure GDP
+
+The same production can be viewed from three directions:
+
+1. **Expenditure:** add spending on final output.
+2. **Income:** add income generated as that output is produced.
+3. **Value added:** add each producer's contribution, excluding inputs bought from other producers.
+
+The first two follow the flow of payments. 
+
+Value added follows production stage by stage. 
+
+In principle, all three give the same GDP; taxes, subsidies, and measurement differences require care in practice.
+
+## Expenditure approach
+
+<div class="equation-box">
+$$Y=C+I+G+NX, \qquad NX=X-M$$
+</div>
+
+- $C$: household consumption;
+- $I$: business capital, new housing, and inventories;
+- $G$: government purchases of current goods and services;
+- $NX$: exports minus imports.
+
+Imports are subtracted because they may already appear inside $C$, $I$, or $G$ but are not domestic production.
+
+## Consumption and investment
+
+Consumption includes household spending on durable goods, non-durable goods, and services.
+
+Investment means additions to productive capital or inventories:
+
+- machinery and structures;
+- new housing;
+- changes in inventories.
+
+Purchasing an existing financial asset transfers ownership. It does not create new capital for GDP accounting.
+
+## Government purchases and transfers
+
+Government purchases include public services, employee compensation, and infrastructure.
+
+**Pensionsv and **welfare benefits** are **transfers**. They enter GDP only when recipients spend the income on newly produced goods and services.
+
+**Interest** on **government** debt is also treated as a transfer in the textbook's national accounts framework.
+
+## Worked expenditure example
+
+Suppose an economy records, in £ billions:
+
+| $C$ | $I$ | $G$ | $X$ | $M$ |
+|---:|---:|---:|---:|---:|
+| 391 | 136 | 150 | 82 | 111 |
+
+::: incremental
+$$NX=82-111=-29$$
+
+$$GDP=391+136+150-29=£648\text{ billion}$$
+:::
+
+## Income approach
+
+*Ask where the revenue from final output goes.* 
+
+It pays workers and other factor owners; what remains contributes to business income and profits.
+
+The main income components are employee compensation (including employers' pension contributions), proprietors' income, rents, corporate profits, and net interest from production.
+
+These incomes are not simply added and called GDP: product taxes less subsidies, depreciation, and cross-border income matter when moving among national-account totals.
+
+## From national income to household income
+
+National income records income generated by production, including profits firms retain. It is not all money households can spend.
+
+Personal income allows for income retained by firms and includes transfers received by households, such as pensions. A transfer changes who receives income; it is not itself new output.
+
+After personal taxes, households have **disposable personal income**:
+
+$$Y_d=C+S.$$
+
+Households allocate disposable income between consumption and saving.
+
+## Value added prevents double counting
+
+| Stage | Sales | Intermediate inputs | Value added |
+|---|---:|---:|---:|
+| farmer sells wheat | £20 | £0 | £20 |
+| miller sells flour | £35 | £20 | £15 |
+| baker sells bread | £60 | £35 | £25 |
+| **total value added** |  |  | **£60** |
+
+The sum of value added equals the final sale.
+
+## Inventories and depreciation
+
+Goods produced but not sold add to inventories and count as current investment.
+
+Gross investment includes replacement of worn-out capital.
+
+$$\text{net investment}=\text{gross investment}-\text{depreciation}$$
+
+Consequently:
+
+$$K_{t+1}=K_t+\text{net investment}.$$
+
+## Measurement in practice
+
+In theory, the expenditure, income, and production approaches agree.
+
+The production approach first measures gross value added at basic prices:
+
+$$GDP_{market}=GVA_{basic}+\text{taxes on products}-\text{subsidies on products}.$$
+
+In practice, timing differences and incomplete observations create a statistical discrepancy. 
+
+Agencies revise estimates as more complete information arrives. Revision does not mean that the accounting identity failed.
+
+## Nominal GDP combines prices and quantities
+
+For goods $i=1,\ldots,n$:
+
+$$GDP_t^{nominal}=\sum_i P_{it}Q_{it}.$$
+
+A rise in nominal GDP may reflect greater production, higher prices, or both.
+
+Real GDP separates quantity change by valuing production with a common price basis.
+
+## A two-good economy
+
+| Year | Apple price | Apple quantity | Banana price | Banana quantity |
+|---|---:|---:|---:|---:|
+| 2010 | £2.00 | 150 | £1.00 | 100 |
+| 2020 | £2.50 | 200 | £2.00 | 200 |
+
+::: incremental
+Nominal GDP in 2010: $2(150)+1(100)=£400$.
+
+Nominal GDP in 2020: $2.5(200)+2(200)=£900$.
+:::
+
+Nominal GDP rose by 125%, but prices and quantities both changed.
+
+## Real GDP holds prices constant
+
+Using 2010 prices:
+
+$$GDP_{2020}^{real}=2(200)+1(200)=£600.$$
+
+::: incremental
+$$\text{real growth}=\frac{600-400}{400}\times100=50\%.$$
+:::
+
+The calculation attributes the remaining change in nominal GDP to prices.
+
+Official statistics commonly use chain-linked volume measures rather than one fixed base year for every comparison.
+
+## The GDP deflator {.compact-deflator}
+
+$$\text{GDP deflator}_t=\frac{GDP_t^{nominal}}{GDP_t^{real}}\times100.$$
+
+| Year | Nominal GDP | Real GDP at 2010 prices |
+|---|---:|---:|
+| 2010 | £400 | £400 |
+| 2020 | £900 | £600 |
+
+::: incremental
+For the base year:
+
+$$\text{GDP deflator}_{2010}=\frac{400}{400}\times100=100.$$
+
+For 2020:
+
+$$\text{GDP deflator}_{2020}=\frac{900}{600}\times100=150.$$
+:::
+
+The deflator equals 100 in the base year. 
+
+In this example, the price level for domestically produced final output is 50% higher in 2020 than in 2010.
+
+## GDP and wellbeing
+
+GDP measures recorded production. It does not directly measure wellbeing.
+
+More production may increase the resources available to society, but the welfare effect also depends on what is produced, how it is produced, and who benefits.
+
+GDP remains useful when interpreted as a production measure rather than a complete social scorecard.
+
+## Important limitations
+
+GDP may miss or inadequately represent:
+
+- unpaid household work and care;
+- informal and unreported activity;
+- leisure and working conditions;
+- environmental damage and resource depletion;
+- the distribution of income;
+- changes in quality that statistics capture imperfectly.
+
+Cross-country comparisons also require attention to population, prices, and purchasing power.
+
+## Interpreting a change in GDP
+
+Before treating higher GDP as economic improvement, ask:
+
+1. Is the figure nominal or real?
+2. Did total GDP or GDP per person change?
+3. Was the change temporary or persistent?
+4. Did unmeasured costs or benefits change?
+5. How was the resulting income distributed?
+
+These questions supplement GDP rather than replace it.
+
+## Summary
+
+- The circular flow connects output, income, and expenditure.
+- GDP measures new final production within a country's borders.
+- Expenditure, income, and value added are three views of the same activity.
+- Real GDP isolates quantity change; nominal GDP combines prices and quantities.
+- The GDP deflator measures prices of domestic final output.
+- GDP is central to macroeconomics but incomplete as a measure of wellbeing.
+
+**Next lecture:** inflation, unemployment, and interest rates, including the consumer price index.
+
+<style>
+.lecture-section { position:absolute; top:1.55em; right:2.25em; font-size:49%; color:#687581; letter-spacing:.08em; text-transform:uppercase; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ var section='Introduction';
+ var sectionStarts={
+  'Stocks and flows':'Circular flow',
+  'Gross domestic product':'Defining GDP',
+  'Three perspectives on one total':'Measuring GDP',
+  'Nominal GDP combines prices and quantities':'Prices and growth',
+  'GDP and wellbeing':'Interpreting GDP',
+  'Summary':'Conclusions'
+ };
+ document.querySelectorAll('div.slide').forEach(function(slide){
+  var heading=slide.querySelector('h1');
+  if(!heading)return;
+  var title=heading.textContent.trim();
+  if(title.startsWith('Lecture 3:'))return;
+  if(sectionStarts[title])section=sectionStarts[title];
+  var label=document.createElement('span');
+  label.className='lecture-section';
+  label.textContent=section;
+  slide.appendChild(label);
+ });
+});
+</script>

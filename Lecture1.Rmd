@@ -1,0 +1,489 @@
+---
+pagetitle: "EC114 Macro I - Lecture 1"
+output:
+  slidy_presentation:
+    font_adjustment: 0
+    footer: "Macro I - Lecture 1"
+    self_contained: true
+    slide_level: 2
+css: macro1.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+dir.create("figures_v2", showWarnings=FALSE)
+blue <- "#003b70"; teal <- "#008c95"; pink <- "#e5007d"; orange <- "#e84e0f"; grey <- "#777777"
+read_online_or_local <- function(url, local_file) {
+  tmp <- tempfile(fileext=".csv")
+  ok <- tryCatch(utils::download.file(url,tmp,mode="wb",quiet=TRUE)==0,error=function(e) FALSE)
+  if(ok && file.exists(tmp) && file.info(tmp)$size>0) tmp else local_file
+}
+read_ons <- function(file) {
+  x <- read.csv(file,skip=8,header=FALSE,stringsAsFactors=FALSE)
+  names(x) <- c("period","value"); x$value <- as.numeric(x$value); x$year <- as.numeric(sub(" .*","",x$period)); x
+}
+boe <- read.csv(read_online_or_local("https://datahub.io/economic-history/millennium-macroeconomic-data-uk/r/annual.csv","boe_millennium_annual.csv"),stringsAsFactors=FALSE)
+boe$year <- as.numeric(boe$year); boe$value <- as.numeric(boe$value)
+gdp <- read_ons(read_online_or_local("https://www.ons.gov.uk/generator?format=csv&uri=%2Feconomy%2Fgrossdomesticproductgdp%2Ftimeseries%2Fabmi%2Fqna","ons_gdp.csv"))
+unemp <- read_ons(read_online_or_local("https://www.ons.gov.uk/generator?format=csv&uri=%2Femploymentandlabourmarket%2Fpeoplenotinwork%2Funemployment%2Ftimeseries%2Fmgsx%2Flms","ons_unemployment.csv"))
+infl <- read_ons(read_online_or_local("https://www.ons.gov.uk/generator?format=csv&uri=%2Feconomy%2Finflationandpriceindices%2Ftimeseries%2Fd7g7%2Fmm23","ons_inflation.csv"))
+gdp <- subset(gdp,grepl("^[0-9]{4}$",period)); unemp <- subset(unemp,grepl("^[0-9]{4}$",period)); infl <- subset(infl,grepl("^[0-9]{4}$",period))
+
+cycle_frame <- function(file,stage) {
+  svg(file,width=9,height=4.8,bg="white"); par(mar=c(4.2,4.5,.5,1))
+  tt <- 1:80; trend <- 100+.35*tt; cyc <- 3.5*sin(tt/5); yy <- trend+cyc
+  plot(tt,yy,type="n",axes=FALSE,xlab="Time",ylab="Real output",ylim=c(98,132)); axis(1); axis(2,las=1); box(bty="l"); grid(col="#d9e1e5")
+  lines(tt,yy,lwd=3,col=blue)
+  if(stage>=1) lines(tt,trend,lwd=2.2,lty=2,col=grey)
+  if(stage>=2) { pk<-which(diff(sign(diff(yy)))==-2)+1; tr<-which(diff(sign(diff(yy)))==2)+1; points(tt[pk],yy[pk],pch=19,col=pink); points(tt[tr],yy[tr],pch=19,col=orange); text(tt[pk[1]],yy[pk[1]]+2,"peak",col=pink,font=2); text(tt[tr[1]],yy[tr[1]]-2,"trough",col=orange,font=2) }
+  if(stage>=3) { arrows(27,106,36,111,length=.12,lwd=2,col=teal); text(31,104,"expansion",col=teal,font=2); arrows(43,115,50,112,length=.12,lwd=2,col=orange); text(49,122,"contraction",col=orange,font=2) }
+  dev.off()
+}
+invisible(lapply(0:3,function(i) cycle_frame(sprintf("figures_v2/cycle-%s.svg",i),i)))
+```
+
+## EC114: Introductory Macroeconomics
+
+**Macro I**  
+
+Dr Theodoros Arvanitopoulos
+
+EC114 follows EC113 and completes your first-year introduction to economics.
+
+It studies economy-wide growth, unemployment and inflation, and what government policy can do about them.
+
+<section class="incremental">
+<div class="why-macroeconomics">
+<h3>Why macroeconomics?</h3>
+<p>We will use evidence, diagrams and mathematics to connect individual decisions with economy-wide outcomes.</p>
+<p>We will also ask when markets coordinate activity well and when government action may improve economic performance.</p>
+<p><strong>Our starting question:</strong> how do millions of individual choices become economy-wide outcomes?</p>
+<p class="source">Module overview: <a href="https://www.reading.ac.uk/modules/documents?acyear=2026%252f7&amp;modcode=EC114&amp;schoolcode=PPE+ECO%7CPPE+GIPIS%7CPPE+PHIL%7CPPE+POL">University of Reading, EC114 description (2026/27)</a>.</p>
+</div>
+</section>
+
+## Module structure
+
+### 1. Timings
+
+**Autumn lectures (weeks 7–12):** Mondays, 11:00 am–1:00 pm, in JJ Thomson, Slingo Lecture Theatre (LG01). The first is Monday 9 November 2026.
+
+**Spring lectures (weeks 1–6):** check your second-semester timetable for the time and room.
+
+**Tutorials:** one each teaching week from week 8; check your timetable for your group and room.
+
+<section class="incremental">
+<div class="module-assessment">
+<h3>2&#46; Assessment</h3>
+<p><strong>Online test 1 (20%):</strong> 16 December 2026 at 11:00 am.</p>
+<p><strong>Online test 2 (20%):</strong> second semester; date and time to be confirmed.</p>
+<p><strong>Final exam (60%):</strong> three-hour, in-person written exam; date and time to be confirmed in semester 2.</p>
+</div>
+</section>
+
+## Learning objectives
+
+By the end of this lecture, you should be able to:
+
+- explain the questions that distinguish macroeconomics from microeconomics;
+- describe the main aggregate outcomes and read levels, growth rates and log-scale plots;
+- explain why the Great Depression changed economic thought;
+- distinguish classical, Keynesian, and later macroeconomic approaches;
+- describe how modern macroeconomists connect models with evidence.
+
+### 📚 Reading
+
+Case, Fair and Oster, *Principles of Macroeconomics*, Chapters 1 and 5.
+
+## Lecture outline
+
+1. **Introduction:** what macroeconomics asks and why aggregation matters.
+2. **The economy in data:** output, growth, logs, unemployment, and inflation.
+3. **How ideas changed:** from market clearing to Keynes and later approaches.
+4. **The course ahead:** models, evidence, and the questions we will study.
+
+We begin with the outcomes we want to explain, then ask how economists came to explain them.
+
+## The organising question
+
+> Why can an economy contain capable workers, productive firms and useful technology, yet still experience recession, unemployment or inflation?
+
+Macroeconomics studies how individual decisions interact through markets, institutions and policy to produce aggregate outcomes.
+
+## The economist's toolkit
+
+Economics provides a disciplined way to analyse choices under constraints.
+
+- opportunity cost;
+- decisions at the margin;
+- the coordinating role of markets;
+- models that isolate a mechanism using *ceteris paribus*.
+
+These tools help us understand individual choices. 
+
+**Macroeconomics asks what happens when those choices interact across the whole economy.** 
+
+## Microeconomics and macroeconomics
+
+| Microeconomics | Macroeconomics |
+|---|---|
+| individual households, firms and markets | totals across the economy |
+| a product's relative price | the overall price level and inflation |
+| employment in a firm or industry | economy-wide employment and unemployment |
+| allocation within markets | interaction across goods, labour and financial markets |
+
+Macroeconomics builds on individual behaviour but cannot study each market in isolation.
+
+## When individual choices add up
+
+One household can save more by spending less, holding everyone else's spending and income constant.
+
+If *every* household cuts spending together, firms may sell less, reduce production and lower employment. 
+
+$\rightarrow$ Household income can then fall, making it harder for the economy as a whole to save more.
+
+The action remains individually sensible, but its aggregate consequence depends on how other agents respond.
+
+This is an example of the **paradox of thrift**: an individually sensible decision need not have the same effect when made by everyone. 
+
+It is a possibility, not a claim that saving is always harmful.
+
+## Three central concerns
+
+::: incremental
+
+### Output and growth
+
+How much does the economy produce, and how does productive capacity change?
+
+### Unemployment
+
+Why can people willing and able to work remain without jobs?
+
+### Inflation
+
+Why does the overall price level rise, and why does inflation vary?
+
+:::
+
+Each outcome describes a different part of economic performance. 
+
+A country can, for example, have rising output while unemployment remains high or inflation accelerates.
+
+## Business cycles
+
+<div class="plot-stack"><img src="figures_v2/cycle-0.svg" alt="Stylised output series"><ul class="incremental plot-overlays"><li><img src="figures_v2/cycle-1.svg" alt="Output and trend"></li><li><img src="figures_v2/cycle-2.svg" alt="Peaks and troughs"></li><li><img src="figures_v2/cycle-3.svg" alt="Expansion and contraction"></li></ul></div>
+
+<ul class="incremental cycle-notes">
+<li><strong>Business cycle:</strong> expansions and contractions (recessions) in economy-wide activity around a longer-run trend.</li>
+<li><strong>Beyond GDP:</strong> employment, production, and financial conditions often move together. Cycles differ in cause, severity, and duration.</li>
+<li><strong>Turning points:</strong> notice when indicators change direction around peaks and troughs. Keynes linked investment and employment in his analysis of the <em>trade cycle</em> (<a href="https://www.hetwebsite.net/het/texts/keynes/gt/chap22.htm">1936, ch. 22</a>).</li>
+</ul>
+
+## Levels and rates of change
+
+The **level** tells us how much is produced at a point in time. The **growth rate** tells us how quickly that level changes.
+
+An economy leaving a trough may still have low output, even when growth is positive. An economy leaving a peak may still have high output, even when growth is negative.
+
+
+For output $Y$, the annual percentage growth rate is
+
+$$g_t = \frac{Y_t-Y_{t-1}}{Y_{t-1}}\times100$$
+
+Here $Y_t$ is output this year and $Y_{t-1}$ is output last year. For example, a rise from 100 to 103 gives $g_t=3\%$.
+
+## What is a logarithm?
+
+An exponent tells us the result of raising a base to a power: $10^2=100$. 
+
+A logarithm asks the reverse question: **which power of 10 gives 100?**
+
+$$\log_{10}(100)=2 \quad\text{because}\quad 10^2=100.$$
+
+::: incremental
+
+- The small number in $\log_b(x)$ is the **base**. In general, $\log_b(x)=y$ means $b^y=x$.
+- Base 10 gives $\log_{10}(x)$. The **natural log** uses base $e\approx2.718$ and is written $\ln(x)=\log_e(x)$.
+- In these slides, “log” means the natural log. We take logs only of **positive** values.
+
+:::
+
+## Why economists use logs
+
+Economists often compare **proportional changes**, rather than differences in units. Logs help because a percentage change in a positive variable is close to a change in its natural log:
+
+$$100[\ln(Y_t)-\ln(Y_{t-1})]\ \approx\ g_t.$$
+
+::: incremental
+
+For example, output rising from 100 to 105 grows by **exactly 5%**. The log calculation gives $100[\ln(105)-\ln(100)]\approx4.88\%$. It is an approximation, especially for larger changes.
+
+On a log plot, equal vertical distances represent equal **proportional** changes. 
+
+$\rightarrow$ That makes the long-run output series on the next slide easier to read. 
+
+:::
+
+## A long view of UK output
+
+Growth over centuries is not a smooth line. 
+
+What matters here is the sustained rise in output after industrialisation, rather than any single year's movement.
+
+```{r long-gdp, fig.width=9, fig.height=4.6}
+d <- subset(boe,variable_id=="composite-estimate-of-english-and-geographically-consistent" & is.finite(year) & is.finite(value) & value>0)
+plot(d$year,log(d$value),type="l",lwd=2.7,col=blue,xlab="Year",ylab="Log real GDP index (2013 = 100)"); grid(col="#d9e1e5"); lines(d$year,log(d$value),lwd=2.7,col=blue)
+```
+
+<p class="source">Source: Bank of England, <em>A Millennium of Macroeconomic Data</em>. The historical series combines English and geographically consistent UK estimates; a log scale makes proportional changes easier to compare.</p>
+
+## Modern UK real GDP
+
+The historical view gives way to an official annual series. 
+
+**Real GDP** measures output after adjusting for changes in prices.
+
+```{r modern-gdp, fig.width=9, fig.height=4.6}
+d <- subset(gdp,year>=1950)
+plot(d$year,d$value/1000,type="l",lwd=2.7,col=blue,xlab="Year",ylab="£ billion (chained-volume measure)"); grid(col="#d9e1e5"); lines(d$year,d$value/1000,lwd=2.7,col=blue)
+```
+
+<p class="source">Source: Office for National Statistics (ONS), series ABMI. Read the vertical axis as the level of inflation-adjusted output, not as its growth rate.</p>
+
+## UK real GDP growth
+
+The same output series tells a different story when we plot **year-to-year percentage change**. 
+
+Years below zero are years of contraction in annual real GDP.
+
+```{r growth, fig.width=9, fig.height=4.6}
+d <- subset(gdp,year>=1950); gg <- 100*(d$value[-1]/d$value[-nrow(d)]-1)
+plot(d$year[-1],gg,type="l",lwd=2.5,col=teal,xlab="Year",ylab="Annual change (%)"); abline(h=0,lty=2,col=grey); points(d$year[-1][gg<0],gg[gg<0],pch=19,col=orange); grid(col="#d9e1e5"); lines(d$year[-1],gg,lwd=2.5,col=teal)
+```
+
+<p class="source">Source: ONS, series ABMI; growth calculated from annual real GDP. Orange points mark negative annual growth.</p>
+
+## UK unemployment
+
+Unemployment counts people without work who are seeking and available for work. 
+
+The **unemployment rate** expresses that group as a share of the labour force, rather than the whole population.
+
+```{r unemployment, fig.width=9, fig.height=4.6}
+d <- subset(unemp,year>=1971)
+plot(d$year,d$value,type="l",lwd=2.7,col=pink,xlab="Year",ylab="Percent of labour force"); grid(col="#d9e1e5"); lines(d$year,d$value,lwd=2.7,col=pink)
+```
+
+<p class="source">Source: ONS, series MGSX. The unemployment rate can rise even while employment also rises if the labour force grows faster.</p>
+
+## UK inflation
+
+**Inflation** is the rate at which the overall consumer price level rises. 
+
+A fall in inflation usually means prices are rising more slowly, not that prices are falling.
+
+```{r inflation, fig.width=9, fig.height=4.6}
+d <- infl
+plot(d$year,d$value,type="l",lwd=2.7,col=orange,xlab="Year",ylab="Annual change in CPI (%)"); abline(h=0,lty=2,col=grey); grid(col="#d9e1e5"); lines(d$year,d$value,lwd=2.7,col=orange)
+```
+
+<p class="source">Source: ONS, series D7G7 (CPI 12-month rate). Values below zero indicate falling consumer prices.</p>
+
+## Why history matters
+
+Economic theories respond to problems that existing explanations cannot resolve.
+
+The history of macroeconomic thought therefore asks:
+
+::: incremental
+
+- What problem confronted economists?
+- Which assumptions did the prevailing model make?
+- What evidence challenged those assumptions?
+- Which new mechanism or policy followed?
+
+:::
+
+Theories develop through a continuing exchange between models and events.
+
+## Before macroeconomics became a separate field
+
+Before the 1930s, economists had studied production, distribution, trade and long-run growth, but macroeconomics was not yet a separate field.
+
+[**Adam Smith (1776)**](https://www.econlib.org/library/Smith/smWN.html) explained how decentralised exchange and specialisation could coordinate activity through prices.
+
+[**David Ricardo (1817)**](https://www.econlib.org/library/Ricardo/ricP.html) analysed distribution and comparative advantage.
+
+[**Karl Marx (1867)**](https://www.marxists.org/archive/marx/works/1867-c1/) examined capital accumulation and class conflict, offering a critique of capitalism rather than an account centred on market coordination.
+
+Later neoclassical economists, including [**William Stanley Jevons (1871)**](https://www.econlib.org/library/YPDBooks/Jevons/jvnPE.html), [**Francis Ysidro Edgeworth (1881)**](https://archive.org/details/mathematicalpsyc00edgeuoft), and [**Alfred Marshall (1890)**](https://www.econlib.org/library/Marshall/marP.html), formalised choices at the margin and market equilibrium.
+
+Despite these advances, economists had not yet developed a distinct account of **persistent economy-wide unemployment**.
+
+## The classical market-clearing view
+
+The classical approach treated flexible prices and wages as central adjustment mechanisms. Its broad prediction was that excess supply would put downward pressure on prices until markets cleared.
+
+If labour supply exceeded labour demand, falling wages should encourage hiring and reduce unemployment.
+
+Saving and investment should also be coordinated through interest-rate adjustment.
+
+If these adjustments worked quickly across markets, prolonged economy-wide unemployment would be difficult to explain. The speed and effectiveness of adjustment became the crucial question.
+
+## The Great Depression
+
+After 1929, output collapsed and unemployment remained extremely high across several economies. 
+
+The scale and duration of the downturn made it hard to treat unemployment as a brief adjustment.
+
+Persistent unemployment presented a direct challenge:
+
+> If wage and price adjustment restores equilibrium, why did mass unemployment last for years?
+
+The problem concerned the economy as a system, not a single malfunctioning market.
+
+## Keynes and aggregate demand
+
+**John Maynard Keynes**'s *General Theory* appeared in 1936.
+
+Keynes argued that **aggregate demand** i.e., total planned spending on goods and services, could remain too low to support full employment. 
+
+Firms with unsold output have little reason to hire more workers, even if wages fall.
+
+Lower wages could also weaken household income and spending. 
+
+**Government spending** and taxation could therefore influence demand when private expenditure was insufficient.
+
+## Policy after Keynes
+
+### The post-war consensus
+
+- Keynesian analysis shaped teaching and policy after the Second World War. 
+- National accounts, consumption functions and multiplier models helped economists study how spending affected output. 
+- Many believed fiscal and monetary policy could stabilise fluctuations.
+
+### The monetarist challenge
+
+- **Milton Friedman** and Anna J. Schwartz's [*A Monetary History of the United States, 1867–1960* (1963)](https://www.nber.org/books-and-chapters/monetary-history-united-states-1867-1960) argued that monetary failures deepened the Great Depression.
+- Friedman's [‘The Role of Monetary Policy’ (1968)](https://fraser.stlouisfed.org/files/docs/publications/aer/aer_1968_friedman_role_monetary_policy.pdf) challenged attempts to keep unemployment permanently below its natural rate. 
+- Monetarists also stressed monetary causes of sustained inflation and the long, variable lags that limit policy fine-tuning.
+
+The disagreement concerned **how reliably policy could stabilise demand**, not whether spending mattered at all.
+
+## Stagflation challenged the consensus
+
+The 1970s combined high inflation with weak growth and unemployment: **stagflation**.
+
+This experience challenged models that treated inflation mainly as a symptom of excessive demand and implied a stable inflation-unemployment trade-off.
+
+Oil-price shocks demonstrated a different mechanism: adverse **supply** developments could raise prices while reducing output. Demand alone could not explain every episode.
+
+## Expectations and price adjustment
+
+### New classical approach
+
+- [**Robert Lucas (1972)**](https://doi.org/10.1016/0022-0531(72)90142-1) put expectations and individual decisions at the centre of macroeconomics.
+- [Lucas (1976)](https://doi.org/10.1016/S0167-2231(76)80003-6) argued that households and firms may change behaviour when they **anticipate** a policy, making predictions based on past behaviour less reliable.
+
+### New Keynesian response
+
+- New Keynesian models also use optimisation and expectations, but explain why wages and prices may adjust slowly.
+- [**N. Gregory Mankiw (1985)**](https://scholar.harvard.edu/files/mankiw/files/small_menu_costs.pdf) showed how small costs of changing prices can have large economy-wide effects. 
+- Contracts, limited information, and market power can also create **nominal rigidities**.
+
+If prices adjust slowly, a change in spending or monetary policy can affect real output and employment in the short run, even when the long-run adjustment differs.
+
+## Modern macroeconomics
+
+Modern macroeconomics contains disagreements, but much work shares a common structure:
+
+- households and firms solve explicit decision problems;
+- markets and institutions connect those decisions;
+- expectations affect current behaviour;
+- shocks disturb the system;
+- models confront data and policy episodes.
+
+No single model answers every macroeconomic question.
+
+## From theory to evidence
+
+A macroeconomic argument normally contains:
+
+1. a question about an aggregate outcome;
+2. assumptions that isolate a mechanism;
+3. endogenous variables determined within the model;
+4. exogenous variables or shocks taken as given;
+5. evidence used to evaluate the explanation.
+
+- an **endogenous** variable is determined within the model
+- an **exogenous** variable is taken as given for the question at hand. 
+- policy change or other shock can change an exogenous input and, through the model, change an endogenous outcome.
+- words, equations, graphs and data should describe the same argument.
+
+## Positive and normative analysis
+
+**Positive analysis** asks what is happening or what a policy would change.
+
+> How would higher interest rates affect consumption and investment?
+
+**Normative analysis** evaluates outcomes or recommends action.
+
+> Should the central bank raise interest rates to reduce inflation?
+
+Normative conclusions require both positive analysis and explicit value judgements.
+
+## The course map
+
+| Question | Main tools developed later |
+|---|---|
+| How do we measure the economy? | GDP, inflation, unemployment and interest rates |
+| What determines short-run output? | expenditure, multiplier, and IS-LM analysis |
+| How does policy affect activity? | fiscal and monetary policy |
+| How does the open economy change the model? | trade, capital flows, and exchange rates |
+
+Lecture 3 will use the circular flow to connect households, firms, and government to national accounting.
+
+## Reading and sources
+
+- Case, Fair and Oster, *Principles of Macroeconomics*, Chapters 1 and 5.
+- Bank of England, *A Millennium of Macroeconomic Data*.
+
+
+<style>
+.lecture-section { position: absolute; top: 1.55em; right: 2.25em; font-size: 49%; color: #687581; letter-spacing: .08em; text-transform: uppercase; }
+.source { font-size: 60%; color: #555; margin-top: .35em; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ var section='Introduction';
+ var sectionStarts={
+  'Module structure':'Module guide',
+  'Learning objectives':'Introduction',
+  'Business cycles':'The economy in data',
+  'Why history matters':'How ideas changed',
+  'Modern macroeconomics':'Models and evidence',
+  'Four groups and three markets':'The course ahead',
+  'Summary':'Conclusions'
+ };
+ document.querySelectorAll('div.slide').forEach(function(slide){
+  var heading=slide.querySelector('h1');
+  if(!heading)return;
+  var title=heading.textContent.trim();
+  if(sectionStarts[title])section=sectionStarts[title];
+  var label=document.createElement('span');
+  label.className='lecture-section';label.textContent=section;
+  slide.appendChild(label);
+ });
+});
+window.addEventListener('load',function(){
+ // Slidy sometimes exposes the title slide's incremental content on startup.
+ // Reset its first build after Slidy has initialised, leaving later slides unchanged.
+ if(window.w3c_slidy && w3c_slidy.slide_number===0){
+  w3c_slidy.set_visibility_all_incremental('hidden');
+  w3c_slidy.last_shown=null;
+  w3c_slidy.set_eos_status(false);
+ }
+});
+</script>
