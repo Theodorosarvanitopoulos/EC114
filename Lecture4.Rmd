@@ -23,8 +23,9 @@ build <- function(id, captions, draw) {
     png(f, width=1440, height=600, res=150, bg='white')
     par(mar=c(3.5,4.2,1.5,2), mgp=c(2.4,.6,0), family='sans', cex=1.12)
     draw(s); dev.off()
-    cat(sprintf('<figure class="build-state"%s><img alt="%s" src="%s"><figcaption>%s</figcaption></figure>',
-        if(s>1) ' hidden' else '', captions[s], knitr::image_uri(f), captions[s]))
+    caption <- if(nzchar(captions[s])) paste0('<figcaption>',captions[s],'</figcaption>') else ''
+    cat(sprintf('<figure class="build-state"%s><img alt="%s" src="%s">%s</figure>',
+        if(s>1) ' hidden' else '', paste(id,'diagram, step',s), knitr::image_uri(f), caption))
     unlink(f)
   }
   cat('<div class="build-controls"><button type="button" data-dir="-1">Previous step</button> <span class="build-count"></span> <button type="button" data-dir="1">Next step</button></div></div>')
@@ -75,7 +76,7 @@ div.slide h1 { margin-right: 0; }
 .graph-build { max-width: 1100px; margin: .25em auto; }
 .graph-build figure { margin: 0; }
 .graph-build img { width: 100%; max-height: 43vh; object-fit: contain; }
-.graph-build figcaption { text-align: center; font-size: 82%; min-height: 2.4em; }
+.graph-build figcaption { text-align: center; font-size: 82%; margin:.25em 0; }
 .build-controls { text-align: center; font-size: 65%; margin: .3em; }
 .build-controls button { font: inherit; padding: .3em .6em; }
 .build-count { padding: 0 1em; }
@@ -117,23 +118,11 @@ Case, Fair, and Oster, *Principles of Macroeconomics*, Chapter 7.
 
 ## The consumer price index
 
-A price index combines many prices using their importance in household spending. In a simple fixed-basket example:
-
-The **consumer price index (CPI)** in this example compares the cost of the same basket with its cost in the base period:
+The **consumer price index (CPI)** compares the cost of a basket with its cost in the base period. Holding the basket fixed isolates price changes:
 
 \[
 CPI_t=\frac{\text{cost of the fixed basket at current prices}}{\text{cost of the same basket at base-period prices}}\times100.
 \]
-
-\[
-P_t^L=\frac{\sum_j p_{jt}q_{j0}}{\sum_j p_{j0}q_{j0}}\times100.
-\]
-
-Here \(p_{jt}\) is the current price of item \(j\), and \(q_{j0}\) is its base-period quantity. Holding quantities fixed isolates price changes.
-
-The index equals 100 in the base period. An index of 175 means the basket costs 75% more than in that period; it does not automatically mean this year's inflation is 75%.
-
-## CPI: a worked example
 
 The basket contains **four apples and two bananas**.
 
@@ -148,11 +137,7 @@ The basket contains **four apples and two bananas**.
 CPI_{2018}=100,\qquad CPI_{2020}=\frac{14}{8}100=175.
 \]
 
-\[
-\text{Price increase, 2018–2020}=\frac{175-100}{100}100=75\%.
-\]
-
-This is the **two-year cumulative increase**, not an annual inflation rate.
+The basket costs \((175-100)/100\times100=75\%\) more than in 2018. This is the **two-year cumulative increase**, not an annual inflation rate.
 
 :::
 
@@ -160,52 +145,44 @@ This is the **two-year cumulative increase**, not an annual inflation rate.
 
 Weights determine how much each price change contributes to the index.
 
-*Example:* suppose three assessments contribute 20%, 30%, and 50% to a module mark. With grades of 60, 70, and 80, the overall mark is \(0.2(60)+0.3(70)+0.5(80)=73\). The simple average is 70; the final assessment has more influence because it carries half the weight. The weights add to 100%.
+In the original fruit basket, four apples cost £4 and two bananas cost £4. Each accounts for **half the £8 expenditure**, despite the different quantities.
 
-For a fixed-basket index, base-period spending shares are:
+Apples double in price; bananas rise by 50%. Weighting these changes by their initial spending shares gives:
+
+\[
+P_t^L=100\left[0.5\left(\frac21\right)+0.5\left(\frac32\right)\right]=175.
+\]
+
+::: incremental
+
+More generally, \(s_{j0}\) is item \(j\)'s share of base-period spending:
 
 \[
 s_{j0}=\frac{p_{j0}q_{j0}}{\sum_k p_{k0}q_{k0}},\qquad
 P_t^L=100\sum_j s_{j0}\frac{p_{jt}}{p_{j0}}.
 \]
 
-In the fruit basket both initial spending shares are \(1/2\). Thus \(100[0.5(2/1)+0.5(3/2)]=175\).
-
-## Choosing the basket
-
-| Index | Quantities used | Formula |
-|---|---|---|
-| Laspeyres | Base-period basket | \(P^L=100\frac{\sum p_tq_0}{\sum p_0q_0}\) |
-| Paasche | Current basket | \(P^P=100\frac{\sum p_tq_t}{\sum p_0q_t}\) |
-| Fisher | Both baskets | \(P^F=\sqrt{P^LP^P}\) |
-
-If apples become relatively dearer, households may buy fewer apples and more bananas.
-
-::: incremental
-
-**Laspeyres:** fixes the old basket; ignoring substitution can overstate the rise in the cost of living.
-
-**Paasche:** uses the new basket; allowing substitution can understate that rise.
-
-**Fisher:** takes their geometric mean and requires both baskets.
+Here \(p\) denotes price, \(q\) quantity, \(0\) the base period, and \(t\) the current period. Spending shares sum to one.
 
 :::
 
-These are teaching examples of index construction. UK consumer indices update their weights and link periods over time.
+## Choosing the basket
 
-## Index calculation
+Keep the same prices. The original basket has **four apples and two bananas**; the current basket has **two apples and four bananas**.
 
-Keep the same prices. Suppose the current basket changes to **two apples and four bananas**.
+| Index | Basket held fixed | Calculation |
+|---|---|---|
+| Laspeyres | Original | \(P^L=100\frac{2(4)+3(2)}{1(4)+2(2)}=175\) |
+| Paasche | Current | \(P^P=100\frac{2(2)+3(4)}{1(2)+2(4)}=160\) |
+| Fisher | Combines both | \(P^F=\sqrt{175\times160}\approx167.33\) |
 
-\[
-P^L=175,\qquad P^P=100\frac{2(2)+3(4)}{1(2)+2(4)}=160.
-\]
+::: incremental
 
-\[
-P^F=\sqrt{175\times160}\approx167.33.
-\]
+Apples became relatively dearer. Switching towards bananas reduces the weight on apples. Laspeyres can overstate the cost-of-living increase; Paasche can understate it.
 
-Apples became relatively more expensive, so the current basket puts less weight on them. The measured price increase depends on which basket we hold constant.
+Fisher takes the **geometric mean** of the two indices and requires both baskets. UK consumer indices update weights and link periods over time.
+
+:::
 
 ## Comparing price measures
 
@@ -233,13 +210,13 @@ An increase in all nominal incomes alongside prices differs from a price rise wi
 
 ## Labour-market status
 
-**Employment:** people who work, including those temporarily away from a job. Part-time workers count as employed.
+**Employment:** people who work, including those temporarily away from a job. Underemployed people have jobs but want, and are available for, more hours; they count as employed.
 
 **Unemployment:** people without work who have actively sought work in the previous four weeks and are available to start within two weeks. The definition also covers certain people waiting to start an arranged job.
 
-**Inactivity:** people who meet neither the employment nor unemployment definition.
+**Inactivity:** people who meet neither definition. Discouraged workers who want work but have stopped searching generally fall here.
 
-A student, retiree, or hospital patient can be employed, unemployed, or inactive. Status depends on work, search, and availability, rather than the person's label. Someone temporarily away from a job because of illness may still count as employed.
+A student, retiree, or hospital patient is classified by work, search, and availability. Temporary illness does not automatically end employment.
 
 **Survey coverage is separate:** the Labour Force Survey includes private households, NHS accommodation, and student halls, but excludes most other communal establishments. Exclusion from the survey does not mean a person is economically inactive.
 
@@ -250,7 +227,7 @@ A student, retiree, or hospital patient can be employed, unemployed, or inactive
 For UK statistics, distinguish **people aged 16+** from the **16–64** age band used for headline employment and inactivity rates. People who are neither employed nor unemployed are inactive; some students, retirees, carers, and people with long-term illness fall into this group.
 
 ```{r population-tree, results='asis'}
-build('population',c('Population and age scope','People aged 16+ divide into inactive and economically active','The labour force divides into unemployed and employed'),function(s){
+build('population',c('','People aged 16+ divide into inactive and economically active','Underemployment remains within employment; discouraged workers generally count as inactive'),function(s){
  par(mar=c(.2,.2,.2,.2));plot.new();plot.window(c(0,12),c(0,6))
  text(4,5.6,'Population',font=2,cex=1.4,col=blue)
  segments(c(4,4),c(5.2,5.2),c(1.7,7),c(4.3,4.3),col=blue,lwd=2)
@@ -258,7 +235,7 @@ build('population',c('Population and age scope','People aged 16+ divide into ina
  if(s>=2){segments(c(7,7),c(3.55,3.55),c(4.6,9.3),c(2.7,2.7),col=teal,lwd=2)
  text(4.6,2.4,'Economically inactive',col=grey,font=2)
  text(4.6,1.95,'Neither employed nor unemployed',cex=.8,col=grey)
- text(4.6,1.55,'e.g., students, retirees, long-term sick',cex=.7,col=grey)
+ text(4.6,1.55,'Includes discouraged workers who stop searching',cex=.7,col=grey)
  text(9.3,2.4,'Labour force',col=teal,font=2)}
  if(s>=3){segments(c(9.3,9.3),c(2.0,2.0),c(7.8,10.8),c(.95,.95),col=orange,lwd=2)
  text(7.8,.6,'Unemployed',col=orange,font=2);text(10.8,.6,'Employed',col=teal,font=2)}
@@ -266,16 +243,6 @@ build('population',c('Population and age scope','People aged 16+ divide into ina
  text(10.2,5.15,'NHS housing and student halls: surveyed',cex=.95,col=grey)
 })
 ```
-
-## Inactivity and underemployment
-
-**Discouraged workers** want work but have stopped searching. They generally count as inactive, so they are absent from the unemployment numerator.
-
-**Underemployed workers** have jobs but want, and are available for, more hours. They count as employed.
-
-*Example:* a person seeking full-time work accepts a short part-time job. Measured unemployment falls, although their desired hours remain unmet.
-
-The unemployment rate is useful alongside employment, participation, hours, and vacancies.
 
 ## UK labour-market statistics
 
@@ -300,34 +267,25 @@ Changes in levels are **thousands of people**; changes in rates are **percentage
 
 ## Labour-market rates
 
-Write \(E\) for employed people, \(U\) for unemployed people, and \(N\) for the population in the chosen age band. The **labour force** is \(LF=E+U\).
+Let \(E\) be employed people, \(U\) unemployed people, and \(N\) the population in the chosen age band. The labour force is \(LF=E+U\).
 
-\[
-LF=E+U,\qquad u=\frac{U}{E+U}\times100.
-\]
-\[
-LFPR=\frac{E+U}{N}\times100,\qquad EPR=\frac{E}{N}\times100.
-\]
+*Illustration:* \(N=1{,}000\), \(E=700\), \(U=50\), and 250 people are inactive, so \(LF=750\).
 
-Here \(u\) is the **unemployment rate**, \(LFPR\) the **labour force participation rate**, and \(EPR\) the **employment-to-population rate**. Each denominator answers a different question: unemployed as a share of the labour force, or active and employed people as shares of the chosen population.
+| Rate | Formula | Example |
+|---|---|---|
+| Unemployment, \(u\) | \(100U/LF\) | \(100(50/750)=6.67\%\) |
+| Labour force participation, \(LFPR\) | \(100LF/N\) | \(100(750/1000)=75\%\) |
+| Employment-to-population, \(EPR\) | \(100E/N\) | \(100(700/1000)=70\%\) |
 
-**Keep age bands consistent within each fraction.** ONS headline unemployment covers 16+; headline employment and inactivity rates use 16–64. Those headline rates cannot simply be added to 100.
+::: incremental
 
-## Rates: worked examples
+If 10 unemployed people stop searching, \(u=100(40/740)=5.41\%\).
 
-From the ONS table, the labour force aged 16+ is `r format(ons$Latest[1]+ons$Latest[3],big.mark=',')` thousand.
+Employment stays at 700: the fall in unemployment reflects people leaving the labour force.
 
-\[
-u=\frac{`r ons$Latest[3]`}{`r ons$Latest[1]`+`r ons$Latest[3]`}100\approx `r round(100*ons$Latest[3]/sum(ons$Latest[c(1,3)]),1)`\%.
-\]
+:::
 
-For a separate **illustrative** population of 1,000 adults, suppose \(E=700\), \(U=50\), inactive \(=250\).
-
-\[
-LFPR=75\%,\qquad EPR=70\%,\qquad u=6.67\%.
-\]
-
-If 10 unemployed people stop searching, \(u=40/740=5.41\%\). Employment stays at 700: a lower unemployment rate need not mean more jobs.
+*Use consistent age bands:* ONS headline unemployment uses 16+; employment and inactivity rates use 16–64.
 
 ## Types of unemployment
 
@@ -338,7 +296,9 @@ If 10 unemployed people stop searching, \(u=40/740=5.41\%\). Employment stays at
 | Cyclical | Weak aggregate demand | Lay-offs during a recession |
 | Seasonal | Regular seasonal activity | Tourist employment after summer |
 
-The natural rate is commonly introduced as frictional plus structural unemployment. **Full employment does not mean zero unemployment.** Institutions and matching conditions can change the natural rate over time.
+The natural rate is commonly introduced as frictional plus structural unemployment. 
+
+**Full employment does not mean zero unemployment.** Institutions and matching conditions can change the natural rate over time.
 
 ## The firm's hiring decision
 
@@ -357,13 +317,15 @@ The model assumes a competitive firm, price-taking in output and factor markets,
 \quad\Rightarrow\quad MPL=\frac WP=w.
 \]
 
-The **value** of marginal output equals the nominal wage: \(P\,MPL=W\). Equivalently, marginal output equals the real wage: \(MPL=w\).
+The **value** of marginal output equals the nominal wage: \(P\,MPL=W\). 
+
+Equivalently, marginal output equals the real wage: \(MPL=w\).
 
 :::
 
-## Cobb–Douglas production
+## Deriving labour demand
 
-Consider the Cobb–Douglas production function:
+With productivity \(A>0\), capital \(K\), and labour \(L\), output is:
 
 \[
 Y=AK^{1/3}L^{2/3},\qquad A>0.
@@ -371,24 +333,17 @@ Y=AK^{1/3}L^{2/3},\qquad A>0.
 
 ::: incremental
 
-Differentiate with respect to labour, holding \(A,K\) fixed:
+*Marginal product:* differentiate with respect to labour, holding \(A\) and \(K\) fixed:
 \[
 MPL=\frac23 AK^{1/3}L^{-1/3}.
 \]
 
-Since \(\partial MPL/\partial L=-\frac29 AK^{1/3}L^{-4/3}<0\), marginal product declines as labour rises. Additional workers share a fixed capital stock.
-
-:::
-
-## Deriving labour demand
-
-Set marginal product equal to the real wage:
+*Hiring condition:* set marginal product equal to the real wage \(w=W/P\):
 \[
 \frac23 AK^{1/3}L^{-1/3}=w.
 \]
 
-::: incremental
-
+*Labour demand:* rearrange and cube both sides:
 \[
 L^{1/3}=\frac{2AK^{1/3}}{3w}
 \quad\Rightarrow\quad
@@ -396,7 +351,7 @@ L^D=\left(\frac{2AK^{1/3}}{3w}\right)^3
 =\frac{8A^3K}{27w^3}.
 \]
 
-A higher wage reduces labour demanded. Higher productivity \(A\) or more capital \(K\) raises labour demand at any given wage.
+Additional workers share fixed capital, so marginal product falls. A higher wage reduces labour demanded; higher \(A\) or \(K\) raises it.
 
 :::
 
@@ -405,7 +360,7 @@ A higher wage reduces labour demanded. Higher productivity \(A\) or more capital
 For \(A=3/2\) and \(K=100\), \(L^D=100/w^3\). The plotted curve follows this equation.
 
 ```{r demand-build, results='asis'}
-build('demand',c('The inverse demand curve: w = (100/L)^(1/3)','At w = 1, the firm demands L = 100','A higher wage moves along the curve: at w = 1.25, L = 51.2'),function(s){
+build('demand',c('','At w = 1, the firm demands L = 100','A higher wage moves along the curve: at w = 1.25, L = 51.2'),function(s){
  axes(); demand(); text(218,.88,'Demand',col=blue)
  if(s>=2) point(100,1,'A')
  if(s>=3){point(51.2,1.25,'B',orange);arrows(93,1.04,59,1.21,length=.09,col=orange,lwd=2)}
@@ -417,7 +372,7 @@ build('demand',c('The inverse demand curve: w = (100/L)^(1/3)','At w = 1, the fi
 A productivity improvement from \(A=1.5\) to \(A=1.8\) increases labour demanded at \(w=1\) from 100 to 172.8. Capital stays at 100.
 
 ```{r demand-shift, results='asis'}
-build('demand-shift',c('Initial demand at A = 1.5','Higher productivity shifts the entire curve outward','At the same wage, employment demand rises from 100 to 172.8'),function(s){
+build('demand-shift',c('','Higher productivity shifts the entire curve outward','At the same wage, employment demand rises from 100 to 172.8'),function(s){
  axes();demand(); text(215,.88,'D0',col=blue)
  if(s>=2){demand(A=1.8,col=orange);text(215,1.1,'D1',col=orange)}
  if(s>=3){point(100,1);point(172.8,1,col=orange);arrows(108,1,163,1,length=.1,lwd=2,col=orange)}
@@ -426,46 +381,29 @@ build('demand-shift',c('Initial demand at A = 1.5','Higher productivity shifts t
 
 ## Work and leisure
 
-Let time available be \(T\), leisure \(\ell\), and hours worked \(h=T-\ell\). With non-labour income \(V\), real consumption satisfies:
-
-\[
-c=w(T-\ell)+V.
-\]
-
-An extra hour of leisure costs \(w\) units of consumption. At an interior optimum, \(MU_\ell/MU_c=w\).
+A worker divides available time between paid work and leisure. An extra hour of leisure means giving up an hour's earnings.
 
 - **Substitution effect:** a higher wage makes leisure more expensive, encouraging more work.
 - **Income effect:** higher income can increase desired leisure, encouraging less work.
 
-Assume the substitution effect dominates over the range shown.
+The net effect depends on preferences. In the following example, the substitution effect dominates, so a higher real wage increases hours supplied.
 
-## Individual labour supply
+## Individual and aggregate labour supply
 
-Under that assumption, a higher real wage raises hours supplied. The numerical curve below is illustrative, with \(h=10w\).
-
-```{r individual, results='asis'}
-build('individual',c('Individual labour supply','At w = 1, the individual supplies 10 hours','At w = 1.5, the individual supplies 15 hours'),function(s){
- axes(24,2.2,'Individual hours, h'); lines(c(0,22),c(0,2.2),lwd=3,col=teal)
- if(s>=2) point(10,1,'A',teal)
- if(s>=3){point(15,1.5,'B',orange);arrows(10.7,1.07,14.3,1.43,length=.1,lwd=2,col=orange)}
-})
-```
-
-*Reading the graph:* a higher real wage moves the worker along this supply curve to more hours of work.
-
-## Aggregate labour supply
-
-At each real wage, **add workers' hours horizontally**.<br>Ten identical workers each supply \(h=10w\), giving \(L^S=10h=100w\).
+Each worker supplies \(h=10w\) hours at real wage \(w\). For ten identical workers, **add hours at the same wage**: \(L^S=10h=100w\).
 
 ```{r aggregate, results='asis'}
-build('aggregate',c('One individual: h = 10w','Ten individuals: total labour supply L = 100w','At w = 1, each supplies 10 hours and together they supply 100'),function(s){
- axes(160,1.6,'Hours of labour');lines(c(0,16),c(0,1.6),col=grey,lwd=2);text(20,1.4,'Individual',adj=0,col=grey)
- if(s>=2){supply();text(105,1.4,'Aggregate',col=teal,adj=0)}
- if(s>=3){segments(0,1,100,1,lty=3,col=grey);point(10,1,col=grey);point(100,1,col=teal);arrows(20,1,89,1,length=.1,col=teal,lwd=2)}
+build('aggregate',c('At w = 1, one worker supplies 10 hours','A higher wage moves the individual along the curve to 15 hours','Ten workers supply ten times as many hours at each wage','At w = 1, add ten lots of 10 hours to obtain 100 hours'),function(s){
+ par(mfrow=c(1,2),mar=c(3.5,4.2,1.6,1),cex=1.05)
+ axes(24,2.2,'Individual hours, h'); lines(c(0,22),c(0,2.2),lwd=3,col=teal)
+ title('One worker',cex.main=1,col.main=blue); point(10,1,'A',teal)
+ if(s>=2){point(15,1.5,'B',orange);arrows(10.7,1.07,14.3,1.43,length=.1,lwd=2,col=orange)}
+ if(s>=3){
+  axes(160,2.2,'Total hours, L');supply();title('Ten workers',cex.main=1,col.main=blue)
+  if(s>=4){point(100,1,col=teal);text(108,1.22,'10 x 10 hours',col=teal,adj=.5)}
+ } else {plot.new();text(.5,.5,'Next: add hours across workers',col=grey,cex=1)}
 })
 ```
-
-*Reading the graph:* at \(w=1\), ten workers each supply 10 hours, so aggregate supply is 100 hours.
 
 ## Labour-supply shifts
 
@@ -474,38 +412,19 @@ Migration, labour-force participation, non-labour income, and taxes can shift su
 Here an increase in the number of otherwise identical workers changes \(L^S=100w\) to \(L^S=140w\).
 
 ```{r supply-shift, results='asis'}
-build('supply-shift',c('Initial aggregate supply','More workers increase supply at each wage','At w = 1, labour supplied rises from 100 to 140'),function(s){
+build('supply-shift',c('','More workers increase supply at each wage','At w = 1, labour supplied rises from 100 to 140'),function(s){
  axes();supply();text(170,1.9,'S0',col=teal)
  if(s>=2){supply(140,orange);text(215,1.65,'S1',col=orange)}
  if(s>=3){point(100,1,col=teal);point(140,1,col=orange);arrows(108,1,132,1,length=.1,col=orange,lwd=2)}
 })
 ```
 
-## Solving equilibrium
-
-Let \(A=3/2\), \(K=100\), and \(L^S=100w\).
-
-\[
-L^D=\frac{8}{27}\frac{(3/2)^3(100)}{w^3}=\frac{100}{w^3}.
-\]
-
-::: incremental
-
-\[
-L^D=L^S\quad\Rightarrow\quad\frac{100}{w^3}=100w
-\quad\Rightarrow\quad w^4=1.
-\]
-
-The positive solution is \(w^*=1\), giving \(L^*=100\). Check: each equation returns 100 at that wage.
-
-:::
-
 ## Labour-market equilibrium
 
-At equilibrium, firms want to hire exactly the amount of labour households want to supply. The intersection gives the same answer as the algebra.
+For \(A=3/2\) and \(K=100\), labour demand is \(L^D=100/w^3\), while supply is \(L^S=100w\). Equilibrium equates the two.
 
 ```{r equilibrium, results='asis'}
-build('equilibrium',c('Firms demand labour','Households supply labour','The intersection gives w* = 1 and L* = 100'),function(s){
+build('equilibrium',c('','The intersection is where labour demanded equals labour supplied','Set \\(100/w^3=100w\\), so \\(w^4=1\\). The positive solution is \\(w^*=1\\), giving \\(L^*=100\\).'),function(s){
  axes();demand();text(215,.88,'Demand',col=blue)
  if(s>=2){supply();text(176,1.95,'Supply',col=teal)}
  if(s>=3){point(100,1,col=orange);text(80,1.48,'Equilibrium',col=orange)}
@@ -517,7 +436,7 @@ build('equilibrium',c('Firms demand labour','Households supply labour','The inte
 At a real wage of \(\bar w=1.25\), \(L^D=100/1.25^3=51.2\), while \(L^S=125\). Excess supply is **73.8 labour units**.
 
 ```{r wage-floor, results='asis'}
-build('wage-floor',c('Initial competitive equilibrium','A binding wage floor is set at 1.25','Firms demand 51.2 and households supply 125','The gap is excess labour supply: 125 - 51.2 = 73.8'),function(s){
+build('wage-floor',c('','A binding wage floor is set at 1.25','Firms demand 51.2 and households supply 125','The gap is excess labour supply: 125 - 51.2 = 73.8'),function(s){
  axes();demand();supply();point(100,1,col=grey)
  if(s>=2){segments(0,1.25,235,1.25,col=orange,lwd=2);text(180,1.36,'Wage floor',col=orange)}
  if(s>=3){point(51.2,1.25,col=blue);point(125,1.25,col=teal)}
@@ -525,32 +444,25 @@ build('wage-floor',c('Initial competitive equilibrium','A binding wage floor is 
 })
 ```
 
-## Interpreting the model
-
-The frictionless competitive model clears the market at \(w^*\). A binding wage floor creates excess supply in this model.
-
-Actual unemployment also reflects search, mismatches, and weak aggregate demand. Market clearing here does not explain away the measured frictional or structural unemployment discussed earlier.
-
-Our labour quantities are hours or standardised labour units. Calling the gap a number of unemployed people requires fixed hours per worker. Minimum-wage employment effects also depend on market structure, so the diagram is a conditional prediction.
-
 ## Wage rigidity
 
 | Mechanism | Why wages may remain above clearing levels |
 |---|---|
 | Wage floors | A legal minimum constrains downward adjustment |
 | Collective bargaining | Negotiated wages reflect worker and employer bargaining |
-| Efficiency wages | Higher pay may reduce turnover, improve recruitment or discourage shirking |
+| Efficiency wages | Higher pay may reduce turnover, improve recruitment, or discourage shirking |
 | Contracts and adjustment | Wages may adjust slowly after a fall in labour demand |
 
-An efficiency wage can be a deliberate choice by the firm. Paying less need not maximise profits if it reduces productivity or increases turnover.
+- An efficiency wage can be a profitable choice if higher pay improves productivity. 
+- The wage-floor diagram assumes competition; employment effects can differ under other market structures. 
+- Its gap is in labour units, and converting it to unemployed people requires fixed hours per worker.
 
 ## Job search and matching
 
-Workers differ in skills, location, and preferences. Firms differ in job requirements. Both sides have incomplete information.
+Even with flexible wages, workers and jobs take time to match because skills, locations, and information differ.
 
-- A vacancy and an unemployed worker can coexist without being a suitable match.
-- Normal job turnover generates frictional unemployment.
-- Sectoral change can require retraining or relocation, generating structural unemployment.
+- **Frictional unemployment:** people search between jobs, so vacancies and unemployment coexist.
+- **Structural unemployment:** changing industries or locations require retraining or relocation.
 
 In the next Keynesian block, lower spending reduces production and hiring. This provides the link to **cyclical unemployment**.
 
@@ -569,38 +481,22 @@ i=\frac{1100-1000}{1000}=0.10=10\%.
 
 The borrower pays 10% more pounds. Whether those pounds buy 10% more goods depends on inflation over the same year.
 
-## Purchasing power
+## Real interest and purchasing power
 
-Suppose nominal interest is \(i=10\%\) and inflation is \(\pi=6\%\).
-
-- £1,000 today requires £1,060 next year to preserve purchasing power.
-- The lender receives £1,100: £40 above that purchasing-power benchmark.
-- Deflating the full repayment gives \(1100/1.06=£1,037.74\) in today's prices.
-
-\[
-r=\frac{1037.74-1000}{1000}\approx3.77\%.
-\]
-
-The approximation \(10\%-6\%=4\%\) is close, but it is not the exact return.
-
-## The Fisher relationship
-
-A loan of \(B\) buys \(B/P_t\) units today and returns \(B(1+i)/P_{t+1}\) units next year.
+A £1,000 loan at nominal interest \(i=10\%\) returns £1,100. With inflation \(\pi=6\%\), that repayment buys \(1100/1.06=£1,037.74\) at today's prices.
 
 ::: incremental
 
 \[
-1+r=\frac{B(1+i)/P_{t+1}}{B/P_t}
-=\frac{1+i}{1+\pi}.
+1+r=\frac{1+i}{1+\pi},\qquad
+r=\frac{1+i}{1+\pi}-1=\frac{i-\pi}{1+\pi}.
 \]
 
 \[
-r=\frac{i-\pi}{1+\pi},\qquad i=r+\pi+r\pi.
+r=\frac{0.10-0.06}{1.06}=0.0377\approx3.77\%.
 \]
 
-For modest rates, the product \(r\pi\) is small, giving \(r\approx i-\pi\). Enter rates as decimals when using these formulae.
-
-Use expected inflation \(\pi^e\) when the loan is agreed, and actual inflation \(\pi\) to calculate the realised return.
+The **real interest rate**, \(r\), measures the gain in purchasing power. For modest rates, \(r\approx i-\pi=4\%\) is a useful approximation. Enter rates as decimals in the exact formula.
 
 :::
 
@@ -617,7 +513,7 @@ After the year ends, actual inflation determines the realised real return. Unexp
 Savers supply funds; households, firms, and governments borrow. A higher real interest rate can encourage saving and discourage investment, under the assumptions illustrated.
 
 ```{r loans, results='asis'}
-build('loans',c('Borrowers demand funds','Savers supply funds','The intersection determines the equilibrium real interest rate'),function(s){
+build('loans',c('','','The intersection determines the equilibrium real interest rate'),function(s){
  axes(200,8,'Loanable funds','Real interest rate (%)')
  lines(c(0,200),c(7,1),col=blue,lwd=3);text(167,1.4,'Demand',col=blue)
  if(s>=2){lines(c(0,200),c(1,7),col=teal,lwd=3);text(168,6.8,'Supply',col=teal)}
