@@ -69,18 +69,19 @@ It studies economy-wide growth, unemployment and inflation, and what government 
 
 ### 1. Timings
 
-**Autumn lectures (weeks 7–12):** Mondays, 11:00 am–1:00 pm, in JJ Thomson, Slingo Lecture Theatre (LG01). The first is Monday 9 November 2026.
+**Autumn lectures (weeks 7–11):** Mondays, 11:00 am–1:00 pm, in JJ Thomson, Slingo Lecture Theatre (LG01). The first is Monday 9 November 2026.
 
-**Spring lectures (weeks 1–6):** check your second-semester timetable for the time and room.
+**Spring lectures (weeks 1–5):** check your second-semester timetable for the time and room.
 
 **Tutorials:** one each teaching week from week 8; check your timetable for your group and room.
 
 <section class="incremental">
 <div class="module-assessment">
 <h3>2&#46; Assessment</h3>
-<p><strong>Online test 1 (20%):</strong> 16 December 2026 at 11:00 am.</p>
-<p><strong>Online test 2 (20%):</strong> second semester; date and time to be confirmed.</p>
-<p><strong>Final exam (60%):</strong> three-hour, in-person written exam; date and time to be confirmed in semester 2.</p>
+<p><strong>Mock online test (0%):</strong> Tuesday 8 December 2026, to practise the format.</p>
+<p><strong>Online test 1 (20%):</strong> Tuesday 15 December 2026, available 06:00–18:00 on Blackboard; covers Lectures 1–4.</p>
+<p><strong>Online test 2 (20%):</strong> Wednesday 10 March 2027; covers Lectures 6–9.</p>
+<p><strong>Final exam (60%):</strong> three-hour, in-person written exam, between 10 and 24 May 2027.</p>
 </div>
 </section>
 
