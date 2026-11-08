@@ -40,7 +40,7 @@ cycle_frame <- function(file,stage) {
   plot(tt,yy,type="n",axes=FALSE,xlab="Time",ylab="Real output",ylim=c(98,132)); axis(1); axis(2,las=1); box(bty="l"); grid(col="#d9e1e5")
   lines(tt,yy,lwd=3,col=blue)
   if(stage>=1) lines(tt,trend,lwd=2.2,lty=2,col=grey)
-  if(stage>=2) { pk<-which(diff(sign(diff(yy)))==-2)+1; tr<-which(diff(sign(diff(yy)))==2)+1; points(tt[pk],yy[pk],pch=19,col=pink); points(tt[tr],yy[tr],pch=19,col=orange); text(tt[pk[1]],yy[pk[1]]+2,"peak",col=pink,font=2); text(tt[tr[1]],yy[tr[1]]-2,"trough",col=orange,font=2) }
+  if(stage>=2) { pk<-which(diff(sign(diff(yy)))==-2)+1; tr<-which(diff(sign(diff(yy)))==2)+1; points(tt[pk],yy[pk],pch=19,col=pink); points(tt[tr],yy[tr],pch=19,col=orange); text(tt[pk[1]],yy[pk[1]]+2,"peak",col=pink,font=2); text(tt[tr[1]],yy[tr[1]]-2,"low point",col=orange,font=2) }
   if(stage>=3) { arrows(27,106,36,111,length=.12,lwd=2,col=teal); text(31,104,"expansion",col=teal,font=2); arrows(43,115,50,112,length=.12,lwd=2,col=orange); text(49,122,"contraction",col=orange,font=2) }
   dev.off()
 }
@@ -78,12 +78,29 @@ It studies economy-wide growth, unemployment and inflation, and what government 
 <section class="incremental">
 <div class="module-assessment">
 <h3>2&#46; Assessment</h3>
-<p><strong>Mock online test (0%):</strong> Tuesday 8 December 2026, to practise the format.</p>
+<p><strong>Mock online test (0%):</strong> Friday 11 December 2026, to practise the format.</p>
 <p><strong>Online test 1 (20%):</strong> Tuesday 15 December 2026, available 06:00–18:00 on Blackboard; covers Lectures 1–4.</p>
 <p><strong>Online test 2 (20%):</strong> Wednesday 10 March 2027; covers Lectures 6–9.</p>
 <p><strong>Final exam (60%):</strong> three-hour, in-person written exam, between 10 and 24 May 2027.</p>
 </div>
 </section>
+
+## Module map {.module-map}
+
+**Semester 1:** lectures 1–5. **Semester 2:** lectures 6–10.
+
+| Lecture | Topic |
+|---|---|
+| 1 | Why macroeconomics? Basic concepts and ideas in macroeconomics |
+| 2 | Micro foundations: scarcity, supply, demand, and equilibrium |
+| 3 | The circular flow and GDP |
+| 4 | Inflation, unemployment, and interest rates |
+| 5 | Goods markets: consumption, investment, and equilibrium output |
+| 6 | Goods markets: government and fiscal policy |
+| 7 | Money markets: money, central banks, and interest rates |
+| 8 | Output, the price level, and the interest rate |
+| 9 | Policy and shocks: fiscal and monetary policy, inflation, and supply shocks |
+| 10 | The labour market and the Phillips curve |
 
 ## Learning objectives
 
@@ -176,19 +193,19 @@ A country can, for example, have rising output while unemployment remains high o
 
 ## Business cycles
 
-<div class="plot-stack"><img src="figures_v2/cycle-0.svg" alt="Stylised output series"><ul class="incremental plot-overlays"><li><img src="figures_v2/cycle-1.svg" alt="Output and trend"></li><li><img src="figures_v2/cycle-2.svg" alt="Peaks and troughs"></li><li><img src="figures_v2/cycle-3.svg" alt="Expansion and contraction"></li></ul></div>
+<div class="plot-stack"><img src="figures_v2/cycle-0.svg" alt="Stylised output series"><ul class="incremental plot-overlays"><li><img src="figures_v2/cycle-1.svg" alt="Output and trend"></li><li><img src="figures_v2/cycle-2.svg" alt="Peaks and low points"></li><li><img src="figures_v2/cycle-3.svg" alt="Expansion and contraction"></li></ul></div>
 
 <ul class="incremental cycle-notes">
 <li><strong>Business cycle:</strong> expansions and contractions (recessions) in economy-wide activity around a longer-run trend.</li>
 <li><strong>Beyond GDP:</strong> employment, production, and financial conditions often move together. Cycles differ in cause, severity, and duration.</li>
-<li><strong>Turning points:</strong> notice when indicators change direction around peaks and troughs. Keynes linked investment and employment in his analysis of the <em>trade cycle</em> (<a href="https://www.hetwebsite.net/het/texts/keynes/gt/chap22.htm">1936, ch. 22</a>).</li>
+<li><strong>Turning points:</strong> notice when indicators change direction around peaks and low points. Keynes linked investment and employment in his analysis of the <em>trade cycle</em> (<a href="https://www.hetwebsite.net/het/texts/keynes/gt/chap22.htm">1936, ch. 22</a>).</li>
 </ul>
 
 ## Levels and rates of change
 
 The **level** tells us how much is produced at a point in time. The **growth rate** tells us how quickly that level changes.
 
-An economy leaving a trough may still have low output, even when growth is positive. An economy leaving a peak may still have high output, even when growth is negative.
+During a recovery, output can still be low even though it is growing. At the start of a downturn, output can still be high even though it is falling.
 
 
 For output $Y$, the annual percentage growth rate is
@@ -250,7 +267,7 @@ The historical view gives way to an official annual series.
 
 ```{r modern-gdp, fig.width=9, fig.height=4.6}
 d <- subset(gdp,year>=1950)
-plot(d$year,d$value/1000,type="l",lwd=2.7,col=blue,xlab="Year",ylab="£ billion (chained-volume measure)"); grid(col="#d9e1e5"); lines(d$year,d$value/1000,lwd=2.7,col=blue)
+plot(d$year,d$value/1000,type="l",lwd=2.7,col=blue,xlab="Year",ylab="Real GDP (billion pounds)"); grid(col="#d9e1e5"); lines(d$year,d$value/1000,lwd=2.7,col=blue)
 ```
 
 <p class="source">Source: Office for National Statistics (ONS), series ABMI. Read the vertical axis as the level of inflation-adjusted output, not as its growth rate.</p>
@@ -259,11 +276,12 @@ plot(d$year,d$value/1000,type="l",lwd=2.7,col=blue,xlab="Year",ylab="£ billion 
 
 The same output series tells a different story when we plot **year-to-year percentage change**. 
 
-Years below zero are years of contraction in annual real GDP.
+**Orange dots** mark years of negative annual growth: real GDP fell compared with the previous year.
 
 ```{r growth, fig.width=9, fig.height=4.6}
 d <- subset(gdp,year>=1950); gg <- 100*(d$value[-1]/d$value[-nrow(d)]-1)
 plot(d$year[-1],gg,type="l",lwd=2.5,col=teal,xlab="Year",ylab="Annual change (%)"); abline(h=0,lty=2,col=grey); points(d$year[-1][gg<0],gg[gg<0],pch=19,col=orange); grid(col="#d9e1e5"); lines(d$year[-1],gg,lwd=2.5,col=teal)
+legend("topleft",legend="Negative annual growth",pch=19,col=orange,bty="n",cex=.85)
 ```
 
 <p class="source">Source: ONS, series ABMI; growth calculated from annual real GDP. Orange points mark negative annual growth.</p>
@@ -437,17 +455,6 @@ A macroeconomic argument normally contains:
 
 Normative conclusions require both positive analysis and explicit value judgements.
 
-## The course map
-
-| Question | Main tools developed later |
-|---|---|
-| How do we measure the economy? | GDP, inflation, unemployment and interest rates |
-| What determines short-run output? | expenditure, multiplier, and IS-LM analysis |
-| How does policy affect activity? | fiscal and monetary policy |
-| How does the open economy change the model? | trade, capital flows, and exchange rates |
-
-Lecture 3 will use the circular flow to connect households, firms, and government to national accounting.
-
 ## Reading and sources
 
 - Case, Fair and Oster, *Principles of Macroeconomics*, Chapters 1 and 5.
@@ -456,6 +463,11 @@ Lecture 3 will use the circular flow to connect households, firms, and governmen
 
 <style>
 .lecture-section { position: absolute; top: 1.55em; right: 2.25em; font-size: 49%; color: #687581; letter-spacing: .08em; text-transform: uppercase; }
+.module-map table {font-size:78%;width:96%;margin:.3em auto;table-layout:fixed;}
+.module-map col:first-child {width:9% !important;}
+.module-map col:last-child {width:91% !important;}
+.module-map th,.module-map td {padding:.27em .5em;}
+.module-map th:first-child,.module-map td:first-child {width:9%;text-align:center;}
 .source { font-size: 60%; color: #555; margin-top: .35em; }
 </style>
 
@@ -469,6 +481,7 @@ document.addEventListener('DOMContentLoaded',function(){
   'Why history matters':'How ideas changed',
   'Modern macroeconomics':'Models and evidence',
   'Four groups and three markets':'The course ahead',
+  'Module map':'Module guide',
   'Summary':'Conclusions'
  };
  document.querySelectorAll('div.slide').forEach(function(slide){
