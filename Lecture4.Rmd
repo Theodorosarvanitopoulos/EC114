@@ -1,7 +1,7 @@
 ---
 title: "Lecture 4: Inflation, unemployment, and interest rates"
 subtitle: "Macro I"
-author: "Dr Theodoros Arvanitopoulos"
+author: "Dr Theo Arvanitopoulos"
 date: ""
 output:
   slidy_presentation:

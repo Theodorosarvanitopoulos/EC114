@@ -28,7 +28,7 @@ output:
 
 ::: {.page}
 
-<div class="running-head"><span>Economics 114<br>Introductory Macro</span><span>Autumn 2026<br>Dr Theodoros Arvanitopoulos</span></div>
+<div class="running-head"><span>Economics 114<br>Introductory Macro</span><span>Autumn 2026<br>Dr Theo Arvanitopoulos</span></div>
 
 # Mathematics Review for Introductory Macro
 
