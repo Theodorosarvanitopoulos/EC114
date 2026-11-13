@@ -251,6 +251,8 @@ $$\text{Opportunity cost of one more capital good}
 = -\frac{\Delta \text{consumption goods}}{\Delta \text{capital goods}}$$
 </div>
 
+For a bakery, using resources to buy and install a new oven can mean producing fewer cakes today. The oven is a **capital good** that may increase future capacity; the cakes are **consumption goods** for customers.
+
 Moving towards more capital goods sacrifices current consumption. Economists call the absolute value of this slope the **marginal rate of transformation (MRT)**.
 
 The frontier **curves outwards from the origin** and gets steeper as we move right. 
@@ -259,16 +261,16 @@ Each additional capital good then requires giving up more consumption goods, bec
 
 ## Comparative advantage and specialisation
 
-Imagine Robinson Crusoe living alone on an island. Friday joins him. Both can fish or collect coconuts, but at different rates.
+Two bakers can each make loaves or cakes. They have one hour to divide between the tasks.
 
-| In one hour | Robinson Crusoe | Friday |
+| In one hour | Baker A | Baker B |
 |---|---:|---:|
-| Fish | 12 | 6 |
-| Coconuts | 6 | 12 |
+| Loaves made | 4 | 2 |
+| Cakes made | 2 | 4 |
 
-One fish costs Robinson **½ coconut** but Friday **2 coconuts**. Robinson has a **comparative advantage** in fish; Friday has one in coconuts.
+One loaf costs Baker A **½ cake**, but costs Baker B **2 cakes**. Baker A has a **comparative advantage** in loaves; Baker B has one in cakes.
 
-If each divides the hour equally, together they produce **9 fish and 9 coconuts**. If Robinson fishes and Friday collects coconuts, they produce **12 of each**. Specialisation creates scope for trade.
+If both split the hour equally, together they make **3 loaves and 3 cakes**. If Baker A makes loaves and Baker B makes cakes, they make **4 of each**. Specialisation increases what the bakery can produce.
 
 ## Markets coordinate separate decisions
 
@@ -297,15 +299,17 @@ $$Q_x^d=D(P_x,Y,W,P_r,T,E,N).$$
 
 The **demand curve** varies $P_x$ while holding $Y,W,P_r,T,E,N$ fixed. Changes in these other determinants shift the curve.
 
+An income rise shifts demand **right for a normal good** and **left for an inferior good**.
+
 ## Movement along demand or a shift?
 
 $$Q^d = a - bP, \qquad b>0.$$
 
 <div class="concept-plot plot-stack"><img src="figures/demand-0.svg" alt="Downward-sloping demand curve"><ul class="incremental plot-overlays"><li><img src="figures/demand-1.svg" alt="A rise in price moves along the demand curve from B to A"></li><li><img src="figures/demand-2.svg" alt="A change in another determinant shifts demand to the right"></li></ul></div>
 
-<div class="plot-caption">First, change the good's own price: move along D. Then, change another determinant: D shifts.</div>
+<div class="incremental"><div class="plot-caption">First, change the good's own price: move along D. Then, change another determinant: D shifts.</div></div>
 
-Higher own price usually lowers quantity demanded through substitution and income effects. 
+Higher own price usually lowers quantity demanded through substitution and income effects.
 
 The inverse form, $P=(a-Q^d)/b$, puts price on the vertical axis.
 
@@ -315,13 +319,18 @@ Suppose weekly demand is:
 
 $$Q^d = 80 - 4P + 0.02Y + 2P_b,$$
 
-where $P$ is the rail fare, $Y$ is weekly income, and $P_b$ is the bus fare.
+Here $Q^d$ is the number of train journeys demanded per week, $P$ is the rail fare, $Y$ is weekly income, and $P_b$ is the bus fare.
 
 At $P=20$, $Y=1{,}000$, and $P_b=10$:
 
 $$Q^d = 80 - 80 + 20 + 20 = 40.$$
 
-If the bus fare rises to 15, demand for train journeys rises to 50. The positive cross-price effect identifies the two services as substitutes.
+<ul class="incremental">
+<li>If the bus fare rises to £15, <span class="math inline">\(Q^d=80-80+20+2(15)=50\)</span> train journeys.</li>
+<li>If instead the bus fare rises to £50, <span class="math inline">\(Q^d=80-80+20+2(50)=120\)</span> train journeys.</li>
+</ul>
+
+Train and bus journeys are **substitutes**: a higher bus fare raises train demand. **Complements** are used together: a higher price of one lowers demand for the other.
 
 ## Household demand and total spending
 
@@ -355,7 +364,7 @@ $$Q^s = c + dP, \qquad d>0.$$
 
 <div class="concept-plot plot-stack"><img src="figures/supply-0.svg" alt="Upward-sloping supply curve"><ul class="incremental plot-overlays"><li><img src="figures/supply-1.svg" alt="A rise in price moves along the supply curve from A to B"></li><li><img src="figures/supply-2.svg" alt="Higher input costs shift supply to the left"></li></ul></div>
 
-<div class="plot-caption">First, change the good's own price: move along S. Then, raise input costs: S shifts left.</div>
+<div class="incremental"><div class="plot-caption">First, change the good's own price: move along S. Then, raise input costs: S shifts left.</div></div>
 
 Increasing marginal cost helps explain the upward slope. 
 
@@ -373,7 +382,10 @@ At $P=20$, $W=40$, and $A=5$:
 
 $$Q^s = -20 + 60 - 20 + 20 = 40.$$
 
-If $W$ rises to 52, supply falls to 34 at the same price. That is a leftward shift, not movement along the supply curve.
+<ul class="incremental">
+<li>At the same output price and productivity, if \(W=52\), then \(Q^s=-20+3(20)-0.5(52)+4(5)=-20+60-26+20=34\).</li>
+<li>Supply falls from 40 to 34 at the same price. Higher input costs shift the supply curve left; this is not a movement along it.</li>
+</ul>
 
 ## Firm supply and total output
 
@@ -494,6 +506,8 @@ Price elasticity of supply:
 $$\varepsilon_s = \frac{\%\Delta Q^s}{\%\Delta P}.$$
 
 Use percentage changes because slopes depend on units. Demand is elastic when \(|\varepsilon_d|>1\) and inelastic when \(|\varepsilon_d|<1\).
+
+**Example:** if price rises by 1% and quantity demanded falls by 2%, then \(\varepsilon_d=-2\). Demand is elastic because \(|-2|>1\).
 
 Elasticities help predict the size of price and quantity adjustments after a shock.
 
